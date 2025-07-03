@@ -6,16 +6,16 @@ export const colors = {
   gray: '#333',
   lightGray: '#A3A3A3',
   green: '#10AC84',
-  darkPurple: '#8E44AD', //Fight
-  red: '#FF3B3B', // SWITCH
-  blue: '#003791', // PS5
-  darkGray: '#4D4D4D', // Windows
-  orange: '#FF7F0E', // Sports
-  purple: '#8B008B', // Adventure
-  teal: '#008080', // FPS
-  darkGreen: '#006400', // RPG
-  yellow: '#FFD700', // Ação
-  lightBlue: '#1E90FF', // Fallback/other
+  darkPurple: '#8E44AD',
+  red: '#FF3B3B',
+  blue: '#003791',
+  darkGray: '#4D4D4D',
+  orange: '#FF7F0E',
+  purple: '#8B008B',
+  teal: '#008080',
+  darkGreen: '#006400',
+  yellow: '#FFD700',
+  lightBlue: '#1d9bf0',
   steamBlue: '#1b2838',
   amethyst: '#9B59B6'
 }
