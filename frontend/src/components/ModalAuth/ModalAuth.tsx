@@ -17,11 +17,23 @@ export default function ModalAuth({
   title,
   type
 }: ModalAuthProps) {
-  const [step, setStep] = useState(1) // Para controle de etapas no cadastro
+  const [step, setStep] = useState(1)
+  const [useEmailForContact, setUseEmailForContact] = useState(false)
 
   const registerSchema = Yup.object().shape({
     name: Yup.string().required('Nome obrigatório'),
-    contact: Yup.string().required('Celular ou e-mail obrigatório'),
+    contact: Yup.string()
+      .required('Celular ou e-mail obrigatório')
+      .test('is-contact-valid', 'Celular ou e-mail inválido', function (value) {
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value || '')
+        const isPhone = /^\d+$/.test(value || '')
+
+        if (useEmailForContact) {
+          return isEmail
+        } else {
+          return isEmail || isPhone
+        }
+      }),
     birthMonth: Yup.string().required('Selecione o mês'),
     birthDay: Yup.string().required('Selecione o dia'),
     birthYear: Yup.string().required('Selecione o ano')
@@ -44,6 +56,21 @@ export default function ModalAuth({
 
   if (!isOpen) return null
 
+  const months = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro'
+  ]
+
   return (
     <S.Overlay>
       <S.Modal>
@@ -65,17 +92,35 @@ export default function ModalAuth({
                   <S.Error>{formik.errors.name}</S.Error>
                 )}
 
-                <S.Input
-                  name="contact"
-                  placeholder="Celular ou e-mail"
-                  value={formik.values.contact}
-                  onChange={formik.handleChange}
-                />
-                {formik.touched.contact && formik.errors.contact && (
-                  <S.Error>{formik.errors.contact}</S.Error>
-                )}
+                {/* Novo grupo para o input de contato e o botão de alternar */}
+                <S.ContactInputGroup>
+                  <S.Input
+                    name="contact"
+                    placeholder={useEmailForContact ? 'E-mail' : 'Celular'}
+                    value={formik.values.contact}
+                    onChange={formik.handleChange}
+                    type={useEmailForContact ? 'email' : 'tel'}
+                    // Removido margin-bottom daqui, será gerenciado pelo ContactInputGroup
+                    style={{ marginBottom: '0px' }} // Garante que a margem original do Input não interfira
+                  />
+                  {formik.touched.contact && formik.errors.contact && (
+                    <S.Error>{formik.errors.contact}</S.Error>
+                  )}
+                  <S.ToggleButton
+                    type="button"
+                    onClick={() => setUseEmailForContact(!useEmailForContact)}
+                  >
+                    {useEmailForContact ? 'Usar celular' : 'Usar o e-mail'}
+                  </S.ToggleButton>
+                </S.ContactInputGroup>
+                {/* A margem inferior do grupo agora gerencia o espaçamento para o próximo elemento */}
 
                 <S.Label>Data de nascimento</S.Label>
+                <S.InfoText>
+                  Isso não será exibido publicamente. Confirme sua própria
+                  idade, mesmo se esta conta for de empresa, de um animal de
+                  estimação ou outros.
+                </S.InfoText>
                 <S.BirthContainer>
                   <S.Select
                     name="birthMonth"
@@ -83,18 +128,11 @@ export default function ModalAuth({
                     onChange={formik.handleChange}
                   >
                     <option value="">Mês</option>
-                    <option value="Janeiro">Janeiro</option>
-                    <option value="Fevereiro">Fevereiro</option>
-                    <option value="Março">Março</option>
-                    <option value="Março">Abril</option>
-                    <option value="Março">Maio</option>
-                    <option value="Março">Junho</option>
-                    <option value="Março">Julho</option>
-                    <option value="Março">Agosto</option>
-                    <option value="Março">Setembro</option>
-                    <option value="Março">Outubro</option>
-                    <option value="Março">Novembro</option>
-                    <option value="Março">Dezembro</option>
+                    {months.map((month, index) => (
+                      <option key={index} value={month}>
+                        {month}
+                      </option>
+                    ))}
                   </S.Select>
 
                   <S.Select
@@ -126,14 +164,17 @@ export default function ModalAuth({
                     })}
                   </S.Select>
                 </S.BirthContainer>
-
                 {(formik.touched.birthMonth && formik.errors.birthMonth) ||
                 (formik.touched.birthDay && formik.errors.birthDay) ||
                 (formik.touched.birthYear && formik.errors.birthYear) ? (
                   <S.Error>Data de nascimento obrigatória</S.Error>
                 ) : null}
-
-                <S.AdvanceButton type="submit">Avançar</S.AdvanceButton>
+                <S.AdvanceButton
+                  type="submit"
+                  disabled={!formik.isValid || !formik.dirty}
+                >
+                  Avançar
+                </S.AdvanceButton>
               </form>
             )}
 

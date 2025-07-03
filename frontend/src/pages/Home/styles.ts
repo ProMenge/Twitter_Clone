@@ -1,11 +1,28 @@
 import styled from 'styled-components'
 
+// Novo componente para envolver todo o conteúdo que deve ser borrado
+export const ContentWrapper = styled.div`
+  /* Ocupa a altura total, importante para o overflow e posicionamento do footer */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column; /* Para empilhar o Container e o Footer */
+  justify-content: space-between; /* Empurra o footer para o final se houver espaço */
+
+  &.blurred {
+    filter: blur(5px); /* Ajuste o valor do blur conforme o desejado */
+    transition: filter 0.3s ease-in-out; /* Transição suave para o blur */
+    pointer-events: none; /* Desabilita interações com o conteúdo borrado */
+    user-select: none; /* Previne seleção de texto no fundo borrado */
+  }
+`
+
 export const Container = styled.div`
-  height: 100vh;
+  /* Removido height: 100vh; aqui, pois o ContentWrapper já gerencia a altura */
   width: 100%;
   background: black;
   display: flex;
   flex-direction: row;
+  flex-grow: 1; /* Permite que o container cresça para empurrar o footer */
 
   @media (max-width: 768px) {
     flex-direction: column;
