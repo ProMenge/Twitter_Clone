@@ -15,8 +15,8 @@ import { IoPeopleOutline } from 'react-icons/io5'
 import { MdOutlineVerified } from 'react-icons/md'
 
 import Post from '../../components/Post/Post'
-import CreatePostModal from '../../components/CreatePostModal/CreatePostModal' // Importar o CreatePostModal
-import logo from '../../assets/images/logo-white.png' // Certifique-se de que o caminho do logo está correto
+import CreatePostModal from '../../components/CreatePostModal/CreatePostModal'
+import logo from '../../assets/images/logo-white.png'
 
 interface PostType {
   id: string
@@ -101,16 +101,13 @@ export default function FeedPage() {
     }
   ])
 
-  // NOVO ESTADO: Controla a visibilidade do CreatePostModal
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
 
-  // Função para adicionar um novo post (agora recebe text E imageUrl)
   const handlePostSubmit = (text: string, imageUrl?: string) => {
     if (text.trim() || imageUrl) {
-      // Posta se tiver texto OU imagem
       const newPost: PostType = {
         id: Date.now().toString(),
-        avatarUrl: 'https://via.placeholder.com/48/008000/000000?text=YOU', // Avatar do usuário logado (placeholder)
+        avatarUrl: 'https://via.placeholder.com/48/008000/000000?text=YOU',
         username: 'Seu Usuário',
         handle: '@seuusuario',
         text: text,
@@ -119,10 +116,9 @@ export default function FeedPage() {
         retweets: 0,
         likes: 0,
         views: '0',
-        imageUrl: imageUrl // Passa a URL da imagem aqui
+        imageUrl: imageUrl
       }
       setPosts((prevPosts) => [newPost, ...prevPosts])
-      // O modal será fechado automaticamente pelo próprio CreatePostModal após submeter
     }
   }
 
@@ -149,11 +145,9 @@ export default function FeedPage() {
     { category: 'Entretenimento', hashtag: 'Samuca TV', tweets: '' }
   ]
 
-  // Para o efeito de blur na página inteira quando o modal estiver aberto
-  const isAnyModalOpen = showCreatePostModal // Adapte se tiver outros modais
+  const isAnyModalOpen = showCreatePostModal
 
   return (
-    // Aplica a classe 'blurred' ao container principal se qualquer modal estiver aberto
     <S.PageContainer className={isAnyModalOpen ? 'blurred' : ''}>
       <S.LeftSidebar>
         <S.SidebarLogo src={logo} alt="X Logo" />
@@ -247,10 +241,10 @@ export default function FeedPage() {
             </a>
           </S.NavItem>
         </S.NavList>
-        {/* Botão "Postar" na sidebar que abre o modal */}
-        <S.PostButton onClick={() => setShowCreatePostModal(true)}>
+        {/* NOVO: Usando o SidebarPostButton que estende o componente Button */}
+        <S.SidebarPostButton onClick={() => setShowCreatePostModal(true)}>
           <span>Postar</span>
-        </S.PostButton>
+        </S.SidebarPostButton>
         <S.UserInfoContainer>
           <div className="avatar"></div>
           <div className="text-info">
@@ -267,16 +261,16 @@ export default function FeedPage() {
         </S.FeedHeader>
 
         <S.PostCreationSection onClick={() => setShowCreatePostModal(true)}>
-          <S.PostCreationSectionAvatar src="https://via.placeholder.com/48/008000/000000?text=YOU" />{' '}
+          <S.PostCreationSectionAvatar src="https://via.placeholder.com/48/008000/000000?text=YOU" />
           <S.PostCreationSectionText>
             O que está acontecendo?
-          </S.PostCreationSectionText>{' '}
+          </S.PostCreationSectionText>
         </S.PostCreationSection>
 
         {posts.map((post) => (
           <Post
             key={post.id}
-            id={post.id} // Certifique-se que o componente Post espera 'id'
+            id={post.id}
             avatarUrl={post.avatarUrl}
             username={post.username}
             handle={post.handle}
@@ -360,12 +354,11 @@ export default function FeedPage() {
         </S.SidebarFooter>
       </S.RightSidebar>
 
-      {/* Renderiza o CreatePostModal condicionalmente */}
       <CreatePostModal
         isOpen={showCreatePostModal}
         onClose={() => setShowCreatePostModal(false)}
         onPostSubmit={handlePostSubmit}
-        userAvatarUrl="https://via.placeholder.com/48/008000/000000?text=YOU" // Avatar do usuário logado
+        userAvatarUrl="https://via.placeholder.com/48/008000/000000?text=YOU"
       />
     </S.PageContainer>
   )

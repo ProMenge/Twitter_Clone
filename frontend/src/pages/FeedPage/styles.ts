@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import { colors } from '../../styles'
+import Button from '../../components/Button/Button'
 // Novo Styled Component para o placeholder do ícone
 export const StyledIconPlaceholder = styled.div`
   width: 20px;
@@ -337,22 +338,6 @@ export const SectionTitle = styled.h3`
   margin-bottom: 5px;
 `
 
-export const PremiumButton = styled.button`
-  background-color: #1d9bf0;
-  color: ${colors.white};
-  border: none;
-  border-radius: 9999px;
-  padding: 12px 20px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  align-self: flex-start;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`
-
 export const TrendItem = styled.div`
   padding: 8px 0;
   cursor: pointer;
@@ -418,21 +403,6 @@ export const WhoToFollowItem = styled.div`
   }
 `
 
-export const FollowButton = styled.button`
-  background-color: ${colors.white};
-  color: ${colors.black};
-  border: none;
-  border-radius: 9999px;
-  padding: 8px 15px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #d7dbdd;
-  }
-`
-
 export const SidebarFooter = styled.div`
   margin-top: 20px;
   font-size: 13px;
@@ -479,6 +449,36 @@ export const PostCreationSectionText = styled.span`
   flex-grow: 1; /* Permite que o texto ocupe o restante do espaço */
   color: ${colors.lightGray};
   font-size: 20px; /* Tamanho da fonte como no X */
-  line-height: 24px; /* Altura da linha para espaçamento vertical */
-  padding-top: 12px; /* Ajusta o padding para alinhar com o input do X */
+  line-height: 24px;
+  padding-top: 12px;
+`
+export const SidebarPostButton = styled(Button)`
+  margin-top: 20px;
+  align-self: flex-start;
+  background-color: ${colors.white};
+  color: ${colors.black};
+  padding-left: 12px;
+  padding-right: 12px;
+  min-width: 180px; /* Largura mínima para o botão de postar */
+  width: 100%;
+
+  @media (max-width: 1024px) {
+    width: 48px; /* Tamanho do círculo */
+    height: 48px;
+    min-width: 48px; /* Garante que não encolha demais */
+    padding: 0; /* Remove padding para ficar redondo */
+    font-size: 0; /* Esconde o texto */
+  }
+`
+
+export const PremiumButton = styled(Button)`
+  align-self: flex-start;
+`
+
+export const FollowButton = styled(Button)`
+  background-color: ${colors.white};
+  color: ${colors.black};
+  &:hover {
+    background-color: #d7dbdd;
+  }
 `

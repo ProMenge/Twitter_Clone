@@ -99,22 +99,9 @@ export const ButtonContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-`
 
-export const CreateButton = styled.button`
-  background: #1d9bf0;
-  border: none;
-  border-radius: 25px;
-  color: white;
-  padding: 12px 0;
-  width: 100%;
-  font-size: 16px;
-  font-weight: bold;
-  margin: 20px 0;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.9;
+  button {
+    margin: 20px 0;
   }
 `
 
