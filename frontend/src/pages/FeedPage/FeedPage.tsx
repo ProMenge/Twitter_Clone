@@ -1,22 +1,15 @@
-import * as S from './styles'
 import { useState } from 'react'
-import {
-  FiHome,
-  FiSearch,
-  FiBell,
-  FiMail,
-  FiUser,
-  FiMoreHorizontal
-} from 'react-icons/fi'
-import { FaXTwitter } from 'react-icons/fa6'
-import { BiHash } from 'react-icons/bi'
-import { RiFileList2Line } from 'react-icons/ri'
-import { IoPeopleOutline } from 'react-icons/io5'
-import { MdOutlineVerified } from 'react-icons/md'
+import * as S from './styles' // Manter S para outros styled components da FeedPage
 
-import Post from '../../components/Post/Post'
-import CreatePostModal from '../../components/CreatePostModal/CreatePostModal'
 import logo from '../../assets/images/logo-white.png'
+import CreatePostModal from '../../components/CreatePostModal/CreatePostModal'
+import LeftSidebar from '../../components/LeftSideBar/LeftSideBar'
+// REMOVIDO: import Post from '../../components/Post/Post';
+import MainFeed from '../../components/MainFeed/MainFeed'
+import RightSidebar from '../../components/RightSideBar/RightSideBar'
+
+// As interfaces PostType e UserToFollowType deveriam ser movidas para um arquivo de tipos compartilhado
+// para evitar duplicação. Por enquanto, as manteremos aqui até o passo de organização de tipos.
 
 interface PostType {
   id: string
@@ -37,7 +30,23 @@ interface UserToFollowType {
   avatarUrl: string
   username: string
   handle: string
+  isFollowing?: boolean
 }
+
+const initialTrends = [
+  { category: 'Esporte', hashtag: 'Diogo Jota', tweets: '1,38 mi posts' },
+  {
+    category: 'Assunto do Momento no Brasil',
+    hashtag: '#WimbledonESPN',
+    tweets: '45 mil posts'
+  },
+  {
+    category: 'Assunto do Momento no Brasil',
+    hashtag: 'Censura',
+    tweets: '65 mil posts'
+  },
+  { category: 'Entretenimento', hashtag: 'Samuca TV', tweets: '' }
+]
 
 export default function FeedPage() {
   const [posts, setPosts] = useState<PostType[]>([
@@ -85,19 +94,22 @@ export default function FeedPage() {
       id: 'u1',
       avatarUrl: 'https://via.placeholder.com/48/FF6347/000000?text=M',
       username: 'Move!!',
-      handle: '@MoveDriga'
+      handle: '@MoveDriga',
+      isFollowing: false
     },
     {
       id: 'u2',
       avatarUrl: 'https://via.placeholder.com/48/4682B4/000000?text=T',
       username: 'TechNews',
-      handle: '@TechDaily'
+      handle: '@TechDaily',
+      isFollowing: false
     },
     {
       id: 'u3',
       avatarUrl: 'https://via.placeholder.com/48/9ACD32/000000?text=A',
       username: 'ArtGallery',
-      handle: '@DailyArt'
+      handle: '@DailyArt',
+      isFollowing: false
     }
   ])
 
@@ -130,235 +142,40 @@ export default function FeedPage() {
     )
   }
 
-  const trends = [
-    { category: 'Esporte', hashtag: 'Diogo Jota', tweets: '1,38 mi posts' },
-    {
-      category: 'Assunto do Momento no Brasil',
-      hashtag: '#WimbledonESPN',
-      tweets: '45 mil posts'
-    },
-    {
-      category: 'Assunto do Momento no Brasil',
-      hashtag: 'Censura',
-      tweets: '65 mil posts'
-    },
-    { category: 'Entretenimento', hashtag: 'Samuca TV', tweets: '' }
-  ]
-
   const isAnyModalOpen = showCreatePostModal
+
+  // Avatar do usuário logado (usado na sidebar e na MainContent)
+  const loggedInUserAvatar =
+    'https://via.placeholder.com/48/008000/000000?text=YOU'
 
   return (
     <S.PageContainer className={isAnyModalOpen ? 'blurred' : ''}>
-      <S.LeftSidebar>
-        <S.SidebarLogo src={logo} alt="X Logo" />
-        <S.NavList>
-          <S.NavItem>
-            <a href="#" className="active">
-              <S.StyledIconPlaceholder>
-                <FiHome />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Página Inicial</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <FiSearch />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Explorar</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <BiHash />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Explorar</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <FiBell />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Notificações</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <FiMail />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Mensagens</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <RiFileList2Line />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Listas</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <IoPeopleOutline />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Comunidades</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <FaXTwitter />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Premium</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <MdOutlineVerified />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Organizações Ver.</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <FiUser />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Perfil</span>
-            </a>
-          </S.NavItem>
-          <S.NavItem>
-            <a href="#">
-              <S.StyledIconPlaceholder>
-                <FiMoreHorizontal />
-              </S.StyledIconPlaceholder>{' '}
-              <span>Mais</span>
-            </a>
-          </S.NavItem>
-        </S.NavList>
-        {/* NOVO: Usando o SidebarPostButton que estende o componente Button */}
-        <S.SidebarPostButton onClick={() => setShowCreatePostModal(true)}>
-          <span>Postar</span>
-        </S.SidebarPostButton>
-        <S.UserInfoContainer>
-          <div className="avatar"></div>
-          <div className="text-info">
-            <span className="username">Fred.</span>
-            <span className="handle">@FredMenge</span>
-          </div>
-        </S.UserInfoContainer>
-      </S.LeftSidebar>
+      <LeftSidebar
+        logoSrc={logo}
+        userAvatarUrl={loggedInUserAvatar}
+        username="Fred."
+        userHandle="@FredMenge"
+        onPostButtonClick={() => setShowCreatePostModal(true)}
+      />
 
-      <S.MainContent>
-        <S.FeedHeader>
-          <S.FeedHeaderTab className="active">Para você</S.FeedHeaderTab>
-          <S.FeedHeaderTab>Seguindo</S.FeedHeaderTab>
-        </S.FeedHeader>
+      {/* NOVO: Usando o componente MainFeed */}
+      <MainFeed
+        posts={posts}
+        onOpenCreatePostModal={() => setShowCreatePostModal(true)}
+        userAvatarUrl={loggedInUserAvatar}
+      />
 
-        <S.PostCreationSection onClick={() => setShowCreatePostModal(true)}>
-          <S.PostCreationSectionAvatar src="https://via.placeholder.com/48/008000/000000?text=YOU" />
-          <S.PostCreationSectionText>
-            O que está acontecendo?
-          </S.PostCreationSectionText>
-        </S.PostCreationSection>
-
-        {posts.map((post) => (
-          <Post
-            key={post.id}
-            id={post.id}
-            avatarUrl={post.avatarUrl}
-            username={post.username}
-            handle={post.handle}
-            text={post.text}
-            timestamp={post.timestamp}
-            comments={post.comments}
-            retweets={post.retweets}
-            likes={post.likes}
-            views={post.views}
-            imageUrl={post.imageUrl}
-          />
-        ))}
-      </S.MainContent>
-
-      <S.RightSidebar>
-        <S.SearchBar>
-          <FiSearch />
-          <input type="text" placeholder="Buscar" />
-        </S.SearchBar>
-
-        <S.SectionBox>
-          <S.SectionTitle>Assine o Premium</S.SectionTitle>
-          <p>
-            Assine para desbloquear novos recursos e, se elegível, receba uma
-            parte da receita.
-          </p>
-          <S.PremiumButton>Assinar</S.PremiumButton>
-        </S.SectionBox>
-
-        <S.SectionBox>
-          <S.SectionTitle>O que está acontecendo</S.SectionTitle>
-          {trends.map((trend, index) => (
-            <S.TrendItem key={index}>
-              <p className="category">{trend.category}</p>
-              <p className="hashtag">{trend.hashtag}</p>
-              {trend.tweets && <p className="tweets-count">{trend.tweets}</p>}
-            </S.TrendItem>
-          ))}
-        </S.SectionBox>
-
-        <S.SectionBox>
-          <S.SectionTitle>Quem seguir</S.SectionTitle>
-          {whoToFollow.map((user) => (
-            <S.WhoToFollowItem key={user.id}>
-              <div className="user-info">
-                <div
-                  className="avatar"
-                  style={{
-                    backgroundImage: `url(${user.avatarUrl})`,
-                    backgroundSize: 'cover'
-                  }}
-                ></div>
-                <div className="text-details">
-                  <span className="username">{user.username}</span>
-                  <span className="handle">{user.handle}</span>
-                </div>
-              </div>
-              <S.FollowButton onClick={() => handleFollowUser(user.id)}>
-                Seguir
-              </S.FollowButton>
-            </S.WhoToFollowItem>
-          ))}
-        </S.SectionBox>
-
-        <S.SidebarFooter>
-          <a href="#">Termos de Serviço</a>
-          <a href="#">Política de Privacidade</a>
-          <a href="#">Política de cookies</a>
-          <a href="#">Acessibilidade</a>
-          <a href="#">Informações de anúncios</a>
-          <a href="#">Blog</a>
-          <a href="#">Status</a>
-          <a href="#">Carreiras</a>
-          <a href="#">Recursos da Marca</a>
-          <a href="#">Marketing</a>
-          <a href="#">X para empresas</a>
-          <a href="#">Desenvolvedores</a>
-          <a href="#">Diretório</a>
-          <a href="#">Configurações</a>
-          <span>&copy; 2025 X Corp.</span>
-        </S.SidebarFooter>
-      </S.RightSidebar>
+      <RightSidebar
+        trends={initialTrends}
+        whoToFollow={whoToFollow}
+        onFollowUser={handleFollowUser}
+      />
 
       <CreatePostModal
         isOpen={showCreatePostModal}
         onClose={() => setShowCreatePostModal(false)}
         onPostSubmit={handlePostSubmit}
-        userAvatarUrl="https://via.placeholder.com/48/008000/000000?text=YOU"
+        userAvatarUrl={loggedInUserAvatar}
       />
     </S.PageContainer>
   )
