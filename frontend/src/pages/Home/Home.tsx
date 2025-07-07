@@ -1,14 +1,14 @@
 import * as S from './styles'
 import logo from '../../assets/images/logo.svg'
 import { useState } from 'react'
-import Footer from '../../components/Footer/Footer' // Certifique-se de que o caminho está correto
-import ModalAuth from '../../components/ModalAuth/ModalAuth' // Certifique-se de que o caminho está correto
+import Footer from '../../components/Footer/Footer'
+import ModalAuth from '../../components/ModalAuth/ModalAuth'
+import Button from '../../components/Button/Button'
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
 
-  // Determina se qualquer modal está aberto
   const isModalOpen = showLogin || showRegister
 
   return (
@@ -23,9 +23,14 @@ export default function Home() {
             <S.Subtitle>Inscreva-se hoje</S.Subtitle>
 
             <S.ButtonContainer>
-              <S.CreateButton onClick={() => setShowRegister(true)}>
+              <Button
+                variant="primary" // Azul
+                size="medium" // Padding padrão
+                fullWidth // Ocupa 100% da largura
+                onClick={() => setShowRegister(true)}
+              >
                 Criar conta
-              </S.CreateButton>
+              </Button>
 
               <S.Terms>
                 Ao se inscrever, você concorda com os{' '}
@@ -36,17 +41,21 @@ export default function Home() {
 
               <S.LoginText>Já tem uma conta?</S.LoginText>
 
-              <S.LoginButton onClick={() => setShowLogin(true)}>
+              {/* SUBSTITUÍDO: S.LoginButton por Button */}
+              <Button
+                variant="secondary" // Transparente com borda
+                size="medium" // Padding padrão
+                fullWidth // Ocupa 100% da largura
+                onClick={() => setShowLogin(true)}
+              >
                 Entrar
-              </S.LoginButton>
+              </Button>
             </S.ButtonContainer>
           </S.Right>
         </S.Container>
-        <Footer />{' '}
-        {/* O Footer agora está dentro do ContentWrapper para ser borrado */}
+        <Footer />
       </S.ContentWrapper>
 
-      {/* Os Modals devem estar FORA do ContentWrapper para NÃO serem borrados */}
       <ModalAuth
         isOpen={showRegister}
         onClose={() => setShowRegister(false)}
