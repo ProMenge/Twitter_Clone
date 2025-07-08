@@ -1,0 +1,76 @@
+# Byte-code files
+*.pyc
+__pycache__/
+*.pyd
+*.pyo
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# OS-specific files
+.DS_Store
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Virtual environments
+.venv/  # Poetry's default virtual environment location
+venv/
+env/
+_env/
+.env
+
+# Database
+db.sqlite3
+*.sqlite3-journal
+
+# Media files
+/media/  # User-uploaded files (MEDIA_ROOT)
+
+# Static files
+/static/ # Collected static files (if you use collectstatic command)
+
+# Logging
+*.log
+
+# IDEs
+.idea/           # JetBrains IDEs (e.g., PyCharm)
+.vscode/         # VS Code
+.history/        # VS Code Local History plugin
+
+# Django specific
+*.pot
+*.mo
+local_settings.py # For sensitive local settings that override production ones
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Python package installer
+.ipynb_checkpoints
+
+# Celery
+celerybeat.pid
+
+# pytest
+.pytest_cache/
+
+# Bandit
+.bandit/
+
+# DVC (Data Version Control) files
+.dvc/
+.dvcignore
