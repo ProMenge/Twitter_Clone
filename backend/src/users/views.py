@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import F # Importar F para atomicidade
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -32,7 +33,7 @@ def get_tokens_for_user(user):
 class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True): # Usar raise_exception=True para DRF lidar com 400
             user = serializer.save()
             tokens = get_tokens_for_user(user)
             user_data = UserSerializer(user).data
@@ -40,19 +41,14 @@ class RegisterView(APIView):
                 'token': tokens['access'],
                 'user': user_data,
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # O return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) não é mais necessário com raise_exception=True
 
 class LoginView(APIView):
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = LoginSerializer(data=request.data, context={'request': request}) # Passar request para o serializer
+        serializer.is_valid(raise_exception=True) # A lógica de autenticação já está no serializer
 
-        identifier = serializer.validated_data['username_or_email']
-        password = serializer.validated_data['password']
-
-        user = User.objects.filter(email=identifier).first() or User.objects.filter(username=identifier).first()
-        if user is None or not user.check_password(password):
-            return Response({'detail': 'Credenciais inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
+        user = serializer.validated_data['user'] # Acessa o user que o serializer validou
 
         tokens = get_tokens_for_user(user)
         user_data = UserSerializer(user).data
@@ -73,44 +69,78 @@ class MeView(APIView):
 class UserDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    lookup_field = 'username'
+    lookup_field = 'username' # O campo que será usado na URL para buscar o objeto
 
-    def get(self, request, username):
-        user = get_object_or_404(User, username=username)
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
+    def get_object(self): # Sobrescreve para usar 'username' em vez de PK
+        queryset = self.filter_queryset(self.get_queryset())
+        filter_kwargs = {self.lookup_field: self.kwargs[self.lookup_field]}
+        obj = get_object_or_404(queryset, **filter_kwargs)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def get_serializer_context(self): # Passa o request para o serializer (para is_followed_by_viewer)
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    # O método 'get' que você tinha está bom, mas pode ser simplificado por usar get_object()
+    # def get(self, request, username):
+    #     user = self.get_object() # Já busca pelo username
+    #     serializer = self.get_serializer(user)
+    #     return Response(serializer.data)
+
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, id):
-        if request.user.id != id:
-            return Response({'detail': 'Acesso não autorizado.'}, status=403)
+        user_to_update = get_object_or_404(User, id=id) # Obter o usuário pelo ID da URL
 
-        serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
+        if request.user != user_to_update: # Comparar objetos User, não apenas IDs
+            return Response({'detail': 'Você não tem permissão para editar este perfil.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Usar user_to_update em vez de request.user se request.user não for o objeto correto
+        # (request.user é o usuário autenticado, user_to_update é o usuário do ID da URL)
+        serializer = UserUpdateSerializer(user_to_update, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True): # Usar raise_exception=True
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+            return Response(UserSerializer(user_to_update).data) # Retornar o UserSerializer completo após update
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) não mais necessário
 
 # === Seguir/Deixar de seguir/Sugestões ===
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def follow_user(request, id):
-    target = get_object_or_404(User, id=id)
-    if target == request.user:
-        return Response({'detail': 'Você não pode se seguir.'}, status=400)
+    target_user = get_object_or_404(User, id=id)
+    if target_user == request.user:
+        return Response({'detail': 'Você não pode se seguir.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    Follow.objects.get_or_create(follower=request.user, following=target)
-    return Response({'status': 'followed'}, status=200)
+    follow, created = Follow.objects.get_or_create(follower=request.user, following=target_user)
+    
+    if created:
+        # Atualizar contadores atomicamente
+        User.objects.filter(id=request.user.id).update(following_count=F('following_count') + 1)
+        User.objects.filter(id=target_user.id).update(followers_count=F('followers_count') + 1)
+        return Response({'status': 'followed'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Você já segue este usuário.'}, status=status.HTTP_409_CONFLICT) # 409 Conflict se já segue
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def unfollow_user(request, id):
-    target = get_object_or_404(User, id=id)
-    Follow.objects.filter(follower=request.user, following=target).delete()
-    return Response({'status': 'unfollowed'}, status=200)
+    target_user = get_object_or_404(User, id=id)
+    
+    # Tentativa de deletar a relação de Follow
+    deleted_count, _ = Follow.objects.filter(follower=request.user, following=target_user).delete()
+    
+    if deleted_count > 0:
+        # Atualizar contadores atomicamente
+        User.objects.filter(id=request.user.id).update(following_count=F('following_count') - 1)
+        User.objects.filter(id=target_user.id).update(followers_count=F('followers_count') - 1)
+        return Response({'status': 'unfollowed'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail': 'Você não segue este usuário.'}, status=status.HTTP_404_NOT_FOUND) # Se não encontrou a relação para deletar
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -119,7 +149,8 @@ def who_to_follow(request):
 
     following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
 
-    suggestions = User.objects.exclude(id__in=following_ids).exclude(id=user.id)[:5]
+    # Exclui usuários já seguidos e o próprio usuário logado
+    suggestions = User.objects.exclude(id__in=following_ids).exclude(id=user.id).order_by('?')[:5] # order_by('?') para ordem aleatória (pode ser lento em DBs grandes)
     
     serializer = SuggestedUserSerializer(suggestions, many=True, context={'request': request})
     return Response(serializer.data)
