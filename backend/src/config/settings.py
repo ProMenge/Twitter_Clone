@@ -117,7 +117,8 @@ SIMPLE_JWT = {
 
 # --- Configurações CORS (Necessário para Frontend React) ---
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", # ADICIONE A URL DO SEU FRONTEND
+    "http://localhost:3000",
+    "http://localhost:5173"# ADICIONE A URL DO SEU FRONTEND
 ]
 # Ou, para desenvolvimento, permitir tudo (menos seguro para produção):
 # CORS_ALLOW_ALL_ORIGINS = True

@@ -14,11 +14,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
     path('me/', MeView.as_view(), name='me'),
-    
-    # Ordem das URLs é importante!
-    # A URL mais específica (com <int:id>) deve vir ANTES da menos específica (com <str:username>).
-    # Caso contrário, 'users/<str:username>/' capturaria 'users/123/' como um username.
-    
     path('users/<int:id>/', UserUpdateView.as_view(), name='user-update'), # PUT para atualizar o próprio usuário
     path('users/<int:id>/follow/', follow_user, name='follow-user'), # POST para seguir
     # DELETE para deixar de seguir
