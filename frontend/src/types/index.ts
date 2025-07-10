@@ -27,7 +27,7 @@ export interface LoginPayload {
 }
 
 export interface AuthSuccessResponse {
-  token: string
+  access_token: string
   refresh_token?: string
   user: {
     id: number

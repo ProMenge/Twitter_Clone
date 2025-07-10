@@ -8,7 +8,7 @@ interface CreatePostModalProps {
   isOpen: boolean
   onClose: () => void
   onPostSubmit: (text: string, imageUrl?: string) => void
-  userAvatarUrl: string // URL do avatar do usuário logado
+  userAvatarUrl: string
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({
@@ -33,14 +33,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
     const file = e.target.files?.[0]
     if (file) {
       setSelectedImage(file)
-      setImagePreviewUrl(URL.createObjectURL(file)) // Cria URL para preview
+      setImagePreviewUrl(URL.createObjectURL(file))
     }
   }
 
   const handleRemoveImage = () => {
     setSelectedImage(null)
     if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl) // Libera a URL do objeto
+      URL.revokeObjectURL(imagePreviewUrl)
     }
     setImagePreviewUrl(null)
     if (fileInputRef.current) {
@@ -50,13 +50,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   const handlePostClick = () => {
     if (postText.trim() !== '' || selectedImage) {
-      // Aqui, em uma aplicação real, você faria o upload da imagem
-      // e então chamaria onPostSubmit com a URL da imagem upada.
-      // Por enquanto, passamos a URL de preview como um mock.
       onPostSubmit(postText, imagePreviewUrl || undefined)
       setPostText('')
-      handleRemoveImage() // Limpa a imagem e o preview
-      onClose() // Fecha o modal
+      handleRemoveImage()
+      onClose()
     }
   }
 
@@ -64,11 +61,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   return (
     <S.Overlay onClick={onClose}>
-      {' '}
-      {/* Fecha o modal ao clicar fora */}
       <S.ModalContent onClick={(e) => e.stopPropagation()}>
-        {' '}
-        {/* Impede que o clique no modal feche o overlay */}
         <S.ModalHeader>
           <S.CloseButton onClick={onClose}>
             <IoCloseOutline />

@@ -198,7 +198,7 @@ export default function ModalAuth({
               payload
             )
 
-            localStorage.setItem('access_token', response.data.token)
+            localStorage.setItem('access_token', response.data.access_token)
             localStorage.setItem(
               'user_data',
               JSON.stringify(response.data.user)
@@ -248,7 +248,7 @@ export default function ModalAuth({
             payload
           )
 
-          localStorage.setItem('access_token', response.data.token)
+          localStorage.setItem('access_token', response.data.access_token)
           localStorage.setItem(
             'refresh_token',
             response.data.refresh_token || ''

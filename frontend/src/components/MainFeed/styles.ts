@@ -85,3 +85,19 @@ export const PostCreationSectionText = styled.span`
   line-height: 24px; /* Altura da linha para espaçamento vertical */
   padding-top: 12px; /* Ajusta o padding para alinhar com o input do X */
 `
+
+// NOVO: Indicador de carregamento
+export const LoadingIndicator = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: ${colors.lightGray};
+  font-size: 16px;
+`
+
+// NOVO: Mensagem de "nenhum post"
+export const NoPostsMessage = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: ${colors.lightGray};
+  font-size: 16px;
+`
