@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type FormikErrors, type FormikHelpers, useFormik } from 'formik'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -11,8 +10,10 @@ import type {
   AuthSuccessResponse,
   LoginPayload,
   ModalAuthFormValues,
-  RegisterPayload
+  RegisterPayload,
+  ApiValidationError
 } from '../../types/index'
+import { AxiosError } from 'axios'
 
 interface ModalAuthProps {
   isOpen: boolean
@@ -31,8 +32,6 @@ export default function ModalAuth({
   const [step, setStep] = useState(1)
   const [useEmailForContact, setUseEmailForContact] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
-
-  // Schema de validação completo e dinâmico, acessando o contexto do Formik
   const dynamicSchema = Yup.lazy<Yup.ObjectSchema<ModalAuthFormValues>>(
     (values) => {
       const currentType = values._type_context
@@ -40,7 +39,6 @@ export default function ModalAuth({
       const currentUseEmailForContact = values._useEmailForContact_context
 
       if (currentType === 'register') {
-        // ### CORREÇÃO APLICADA AQUI ###
         return Yup.object<ModalAuthFormValues>().shape({
           name: Yup.string().required('Nome obrigatório'),
           contact: Yup.string()
@@ -77,8 +75,7 @@ export default function ModalAuth({
                 .oneOf([Yup.ref('password')], 'As senhas não coincidem'),
             otherwise: (schema) => schema.notRequired()
           }),
-          // Os campos abaixo não precisam de validação, mas precisam estar no shape
-          // para que o Yup não os remova (strip) do objeto final validado.
+
           username_or_email: Yup.string().notRequired(),
           _type_context: Yup.mixed<'login' | 'register'>()
             .oneOf(['login', 'register'])
@@ -88,14 +85,11 @@ export default function ModalAuth({
           _useEmailForContact_context: Yup.boolean().notRequired()
         })
       } else {
-        // ### CORREÇÃO APLICADA AQUI TAMBÉM ###
         return Yup.object<ModalAuthFormValues>().shape({
           username_or_email: Yup.string().required(
             'Celular, e-mail ou nome de usuário é obrigatório'
           ),
           password: Yup.string().required('Senha obrigatória'),
-          // Os outros campos podem ser definidos como notRequired para manter
-          // a consistência da forma (shape) do objeto.
           name: Yup.string().notRequired(),
           contact: Yup.string().notRequired(),
           birthMonth: Yup.string().notRequired(),
@@ -123,9 +117,9 @@ export default function ModalAuth({
       password: '',
       confirm_password: '',
       username_or_email: '',
-      _type_context: type, // Passar o tipo inicial
-      _step_context: step, // Passar o passo inicial
-      _useEmailForContact_context: useEmailForContact // Passar o estado inicial
+      _type_context: type,
+      _step_context: step,
+      _useEmailForContact_context: useEmailForContact
     },
     validationSchema: dynamicSchema,
     onSubmit: async (
@@ -140,8 +134,6 @@ export default function ModalAuth({
 
       if (type === 'register') {
         if (step === 1) {
-          // Valida apenas os campos do passo 1.
-          // O schema dinâmico já lida com as senhas como notRequired() para step 1.
           const errors = await formik.validateForm(values)
 
           if (
@@ -158,8 +150,6 @@ export default function ModalAuth({
           setSubmitting(false)
           return
         } else if (step === 2) {
-          // No passo 2, o Formik.handleSubmit já vai rodar a validação completa
-          // (o schema dinâmico agora vai exigir as senhas)
           const errors = await formik.validateForm(values)
           if (Object.keys(errors).length > 0) {
             setFormikErrors(errors)
@@ -217,30 +207,31 @@ export default function ModalAuth({
             console.log('Registro bem-sucedido:', response.data)
             onClose()
             navigate('/feed')
-          } catch (error: any) {
-            if (error.response && error.response.data) {
+          } catch (error) {
+            if (error instanceof AxiosError && error.response) {
+              const responseData = error.response.data as ApiValidationError
               const apiErrors: FormikErrors<ModalAuthFormValues> = {}
-              if (error.response.data.username)
-                apiErrors.name = error.response.data.username[0]
-              if (error.response.data.email)
-                apiErrors.contact = error.response.data.email[0]
-              if (error.response.data.password)
-                apiErrors.password = error.response.data.password[0]
-              if (error.response.data.non_field_errors)
-                setGeneralError(error.response.data.non_field_errors[0])
+
+              if (responseData.username)
+                apiErrors.name = responseData.username[0]
+              if (responseData.email) apiErrors.contact = responseData.email[0]
+              if (responseData.password)
+                apiErrors.password = responseData.password[0]
+              if (responseData.non_field_errors)
+                setGeneralError(responseData.non_field_errors[0])
 
               setFormikErrors(apiErrors)
 
               if (
                 !Object.keys(apiErrors).length &&
-                !error.response.data.non_field_errors
+                !responseData.non_field_errors
               ) {
                 setGeneralError('Erro no registro. Tente novamente.')
               }
             } else {
               setGeneralError('Erro de conexão ou servidor. Tente mais tarde.')
+              console.error('Erro não relacionado à API:', error)
             }
-            console.error('Erro no registro:', error)
           } finally {
             setSubmitting(false)
           }
@@ -267,27 +258,26 @@ export default function ModalAuth({
           console.log('Login bem-sucedido:', response.data)
           onClose()
           navigate('/feed')
-        } catch (error: any) {
-          if (error.response && error.response.data) {
+        } catch (error) {
+          if (error instanceof AxiosError && error.response) {
+            const responseData = error.response.data as ApiValidationError
             const apiErrors: FormikErrors<ModalAuthFormValues> = {}
-            if (error.response.data.non_field_errors)
-              apiErrors.username_or_email =
-                error.response.data.non_field_errors[0]
+
+            if (responseData.non_field_errors) {
+              apiErrors.username_or_email = responseData.non_field_errors[0]
+            }
 
             setFormikErrors(apiErrors)
 
-            if (error.response.data.detail) {
-              setGeneralError(error.response.data.detail)
-            } else if (
-              !Object.keys(apiErrors).length &&
-              !error.response.data.detail
-            ) {
+            if (responseData.detail) {
+              setGeneralError(responseData.detail)
+            } else if (!Object.keys(apiErrors).length && !responseData.detail) {
               setGeneralError('Erro no login. Verifique suas credenciais.')
             }
           } else {
             setGeneralError('Erro de conexão ou servidor. Tente mais tarde.')
+            console.error('Erro não relacionado à API:', error)
           }
-          console.error('Erro no login:', error)
         } finally {
           setSubmitting(false)
         }
@@ -310,8 +300,6 @@ export default function ModalAuth({
     'Dezembro'
   ]
 
-  // EFEITO COLATERAL: Atualizar os campos de contexto do Formik quando os states mudam
-  // Isso garante que o schema Yup.lazy receba os valores mais recentes de `type`, `step`, `useEmailForContact`
   useEffect(() => {
     formik.setFieldValue('_type_context', type)
     formik.setFieldValue('_step_context', step)

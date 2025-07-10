@@ -1,13 +1,4 @@
-// src/types/index.ts
-
-// === TIPAGENS PARA ModalAuth ===
-
-// Interface para os valores do formulário ModalAuth (TODOS os campos possíveis)
 export interface ModalAuthFormValues {
-  // ### CORREÇÃO APLICADA AQUI ###
-  // Adicionado `| null` para alinhar com a tipagem interna do Yup/Formik
-
-  // Campos de registro - opcionais para o schema de login
   name?: string | null
   contact?: string | null
   birthMonth?: string | null
@@ -15,17 +6,13 @@ export interface ModalAuthFormValues {
   birthYear?: string | null
   password?: string | null
   confirm_password?: string | null
-
-  // Campo de login - opcional para o schema de registro
   username_or_email?: string | null
 
-  // Variáveis de contexto para o Yup.lazy - não são campos do formulário em si
   _type_context?: 'login' | 'register' | null
   _step_context?: number | null
   _useEmailForContact_context?: boolean | null
 }
 
-// Tipagem para o payload de registro enviado ao backend
 export interface RegisterPayload {
   username: string
   email: string
@@ -34,16 +21,14 @@ export interface RegisterPayload {
   birth_date: string
 }
 
-// Tipagem para o payload de login enviado ao backend
 export interface LoginPayload {
   username_or_email: string
   password: string
 }
 
-// Tipagem para a resposta de sucesso de autenticação do backend
 export interface AuthSuccessResponse {
   token: string
-  refresh_token?: string // Opcional, depende do backend
+  refresh_token?: string
   user: {
     id: number
     username: string
@@ -57,12 +42,9 @@ export interface AuthSuccessResponse {
     created_at: string
     followers_count: number
     following_count: number
-    is_followed_by_viewer?: boolean // Pode vir em algumas respostas de user
-    // Adicione outros campos que seu UserSerializer retorna
+    is_followed_by_viewer?: boolean
   }
 }
-
-// === TIPAGENS PARA FeedPage e Componentes de Post ===
 
 export interface PostType {
   id: string | number // Pode ser string (UUID) ou number (BigAutoField)
@@ -98,4 +80,10 @@ export interface TrendType {
   category: string
   hashtag: string
   tweets: string
+}
+
+export interface ApiValidationError {
+  [key: string]: string[] | string | undefined
+  non_field_errors?: string[]
+  detail?: string
 }
