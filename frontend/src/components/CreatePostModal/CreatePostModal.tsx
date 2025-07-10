@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react'
 import * as S from './styles'
-import { IoCloseOutline } from 'react-icons/io5' // Ícone de fechar
-import { FiImage, FiGift, FiSmile, FiCalendar, FiMapPin } from 'react-icons/fi' // Ícones de ação
+import { IoCloseOutline } from 'react-icons/io5'
+import { FiImage, FiGift, FiSmile, FiCalendar, FiMapPin } from 'react-icons/fi'
 import { RiEarthLine } from 'react-icons/ri'
+import { FaRegComment } from 'react-icons/fa6'
 
+// Ajustar a interface: onPostSubmit agora recebe um File
 interface CreatePostModalProps {
   isOpen: boolean
   onClose: () => void
-  onPostSubmit: (text: string, imageUrl?: string) => void
+  onPostSubmit: (text: string, imageFile?: File) => Promise<void> // Retorna Promise<void> para indicar assincronicidade
   userAvatarUrl: string
 }
 
@@ -20,9 +22,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [postText, setPostText] = useState('')
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null) // Ref para o input de arquivo
+  const [isSubmitting, setIsSubmitting] = useState(false) // NOVO: Estado para o carregamento do envio
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Se o modal não estiver aberto, não renderiza nada
   if (!isOpen) return null
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -44,20 +46,32 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
     }
     setImagePreviewUrl(null)
     if (fileInputRef.current) {
-      fileInputRef.current.value = '' // Limpa o input de arquivo
+      fileInputRef.current.value = ''
     }
   }
 
-  const handlePostClick = () => {
+  const handlePostClick = async () => {
+    // Função agora é assíncrona
     if (postText.trim() !== '' || selectedImage) {
-      onPostSubmit(postText, imagePreviewUrl || undefined)
-      setPostText('')
-      handleRemoveImage()
-      onClose()
+      setIsSubmitting(true) // Inicia o estado de submissão
+      try {
+        // Agora passamos o selectedImage (File) para onPostSubmit
+        await onPostSubmit(postText, selectedImage || undefined)
+        setPostText('')
+        handleRemoveImage()
+        onClose()
+      } catch (error) {
+        console.error('Erro ao submeter o post pelo modal:', error)
+        // Aqui você pode adicionar lógica para exibir um erro ao usuário no modal
+      } finally {
+        setIsSubmitting(false) // Finaliza o estado de submissão
+      }
     }
   }
 
-  const isPostButtonDisabled = postText.trim() === '' && !selectedImage
+  // Desabilita o botão se não houver texto ou imagem, ou se já estiver submetendo
+  const isPostButtonDisabled =
+    (postText.trim() === '' && !selectedImage) || isSubmitting
 
   return (
     <S.Overlay onClick={onClose}>
@@ -71,14 +85,16 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
         <S.ModalBody>
           <S.UserInfoSection>
             <S.Avatar style={{ backgroundImage: `url(${userAvatarUrl})` }} />
-            <S.AudienceSelector>Qualquer pessoa</S.AudienceSelector>
+            <S.AudienceSelector>
+              Qualquer pessoa <RiEarthLine />
+            </S.AudienceSelector>
           </S.UserInfoSection>
 
           <S.PostTextArea
             placeholder="O que está acontecendo?"
             value={postText}
             onChange={handleTextChange}
-            rows={4} // Altura inicial
+            rows={4}
           />
 
           {imagePreviewUrl && (
@@ -91,7 +107,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
           )}
 
           <S.ReplyAudience>
-            <RiEarthLine /> Qualquer pessoa pode responder
+            <FaRegComment /> Qualquer pessoa pode responder
           </S.ReplyAudience>
         </S.ModalBody>
         <S.ModalFooter>
@@ -103,19 +119,22 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
               style={{ display: 'none' }}
               onChange={handleImageChange}
             />
-            <button onClick={() => fileInputRef.current?.click()}>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting}
+            >
               <FiImage />
             </button>
-            <button>
+            <button disabled={isSubmitting}>
               <FiGift />
             </button>
-            <button>
+            <button disabled={isSubmitting}>
               <FiSmile />
             </button>
-            <button>
+            <button disabled={isSubmitting}>
               <FiCalendar />
             </button>
-            <button>
+            <button disabled={isSubmitting}>
               <FiMapPin />
             </button>
           </S.ActionIcons>
@@ -123,7 +142,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
             onClick={handlePostClick}
             $disabled={isPostButtonDisabled}
           >
-            Postar
+            {isSubmitting ? 'Postando...' : 'Postar'}{' '}
+            {/* Texto do botão muda */}
           </S.PostButton>
         </S.ModalFooter>
       </S.ModalContent>
