@@ -33,35 +33,4 @@ api.interceptors.request.use(
   }
 )
 
-// Interceptor para lidar com erros de resposta (opcional, mas útil para refresh de token)
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config;
-//     // Se o erro for 401 Unauthorized e não for a requisição de refresh token em si,
-//     // e o token estiver expirado, tente renová-lo.
-//     if (error.response.status === 401 && !originalRequest._retry) {
-//       originalRequest._retry = true; // Marca a requisição para não entrar em loop infinito
-//       try {
-//         const refreshToken = localStorage.getItem('refresh_token');
-//         if (refreshToken) {
-//           const response = await axios.post(`${API_BASE_URL}token/refresh/`, {
-//             refresh: refreshToken,
-//           });
-//           localStorage.setItem('access_token', response.data.access);
-//           localStorage.setItem('refresh_token', response.data.refresh);
-//           // Tenta a requisição original novamente com o novo token
-//           originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
-//           return api(originalRequest);
-//         }
-//       } catch (refreshError) {
-//         // Se o refresh token falhar, o usuário precisa fazer login novamente
-//         console.error('Refresh token expirado ou inválido, redirecionando para login:', refreshError);
-//         // Redirecione para a página de login aqui (ex: window.location.href = '/login')
-//       }
-//     }
-//     return Promise.reject(error);
-//   }
-// );
-
 export default api
