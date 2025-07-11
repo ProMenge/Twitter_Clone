@@ -1,19 +1,19 @@
-import * as S from './styles'
 import React from 'react'
+import * as S from './styles'
 
 // Importar os ícones necessários do react-icons
 import {
-  FiMessageCircle,
-  FiRepeat,
   FiHeart,
-  FiShare,
-  FiMoreHorizontal
+  FiMessageCircle,
+  FiMoreHorizontal,
+  FiRepeat,
+  FiShare
 } from 'react-icons/fi'
 import { IoStatsChart } from 'react-icons/io5'
 
-import { type PostType } from '../../types'
 import { formatRelative, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { type PostType } from '../../types'
 
 interface PostProps {
   post: PostType

@@ -1,6 +1,6 @@
+import type { JSX } from 'react'
 import { Navigate } from 'react-router-dom'
 import { isAuthenticated } from '../utils/auth'
-import type { JSX } from 'react'
 
 interface ProtectedRouteProps {
   children: JSX.Element

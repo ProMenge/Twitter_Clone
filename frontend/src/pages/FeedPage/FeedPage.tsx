@@ -8,7 +8,7 @@ import MainFeed from '../../components/MainFeed/MainFeed'
 import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import api from '../../services/api'
 
-import type { PostType, UserToFollowType, TrendType } from '../../types'
+import type { PostType, TrendType, UserToFollowType } from '../../types'
 
 const initialTrends: TrendType[] = [
   { category: 'Esporte', hashtag: 'Diogo Jota', tweets: '1,38 mi posts' },
@@ -27,10 +27,11 @@ const initialTrends: TrendType[] = [
 
 export default function FeedPage() {
   const [posts, setPosts] = useState<PostType[]>([])
-  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
+  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([]) // whoToFollow agora virá da API
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
   const [feedType, setFeedType] = useState<'forYou' | 'following'>('forYou')
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
+  const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true) // NOVO: Estado de carregamento para sugestões
 
   const loggedInUserAvatar =
     'https://via.placeholder.com/48/008000/000000?text=YOU'
@@ -41,15 +42,11 @@ export default function FeedPage() {
       setIsLoadingPosts(true)
       try {
         let response
-        // Obter o token de acesso para enviar na requisição de following
         const accessToken = localStorage.getItem('access_token')
 
         if (feedType === 'forYou') {
-          // Para o feed "Para você", não é obrigatório autenticação no backend
           response = await api.get<PostType[]>('posts/')
         } else {
-          // Para o feed "Seguindo", autenticação é OBRIGATÓRIA
-          // Axios já configura o interceptor, mas é bom garantir que o token exista.
           if (!accessToken) {
             console.warn(
               'Usuário não autenticado. Não é possível carregar feed "Seguindo".'
@@ -70,35 +67,35 @@ export default function FeedPage() {
     }
 
     fetchPosts()
-  }, [feedType]) // Re-busca posts quando o tipo de feed muda
+  }, [feedType])
 
   // === Lógica de Busca de Sugestões (useEffect) ===
   useEffect(() => {
     const fetchWhoToFollow = async () => {
+      setIsLoadingWhoToFollow(true) // Inicia carregamento
       try {
-        // Requisições para who-to-follow também exigem autenticação
         const accessToken = localStorage.getItem('access_token')
         if (!accessToken) {
           console.warn(
             'Usuário não autenticado. Não é possível carregar sugestões.'
           )
           setWhoToFollow([])
+          setIsLoadingWhoToFollow(false) // Finaliza mesmo com erro
           return
         }
-        const response = await api.get<UserToFollowType[]>(
-          'users/who-to-follow/'
-        )
+        const response = await api.get<UserToFollowType[]>('/who-to-follow/')
         setWhoToFollow(response.data)
       } catch (error) {
         console.error('Erro ao buscar sugestões:', error)
         setWhoToFollow([])
+      } finally {
+        setIsLoadingWhoToFollow(false) // Finaliza carregamento
       }
     }
 
     fetchWhoToFollow()
   }, []) // Executa apenas uma vez ao montar o componente
 
-  // handlePostSubmit agora recebe File para a imagem
   const handlePostSubmit = async (text: string, imageFile?: File) => {
     try {
       const formData = new FormData()
@@ -106,32 +103,49 @@ export default function FeedPage() {
         formData.append('text_content', text)
       }
       if (imageFile) {
-        formData.append('image', imageFile) // Anexar o File object diretamente
+        formData.append('image', imageFile)
       }
 
-      // Requisição POST para criar o post
       const response = await api.post<PostType>('posts/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data' // Importante para upload de arquivos
+          'Content-Type': 'multipart/form-data'
         }
       })
 
-      // Adição otimista do post recém-criado no topo do feed
       setPosts((prevPosts) => [response.data, ...prevPosts])
     } catch (error) {
       console.error('Erro ao criar postagem:', error)
-      // Aqui você pode adicionar lógica para exibir um erro ao usuário na FeedPage
     }
   }
 
-  const handleFollowUser = (userId: string) => {
-    // Lógica para seguir/deixar de seguir (será integrada com API real depois)
-    setWhoToFollow((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user
-      )
-    )
-    // TODO: Fazer chamada API POST/DELETE para /api/users/{id}/follow/
+  const handleFollowUser = async (
+    userId: number | string,
+    isCurrentlyFollowing: boolean
+  ) => {
+    // NOVO: isCurrentlyFollowing para saber se é follow/unfollow
+    try {
+      if (isCurrentlyFollowing) {
+        await api.delete(`users/${userId}/follow/`)
+        console.log(`Deixou de seguir usuário ${userId}`)
+      } else {
+        await api.post(`users/${userId}/follow/`)
+        console.log(`Começou a seguir usuário ${userId}`)
+      }
+      // Re-fetch a lista de sugestões e posts para refletir a mudança
+      // Uma abordagem mais otimista seria atualizar o estado local de whoToFollow e posts
+      // Mas para simplificar a demo, vamos re-buscar tudo.
+      const updatedWhoToFollowResponse =
+        await api.get<UserToFollowType[]>('/who-to-follow/')
+      setWhoToFollow(updatedWhoToFollowResponse.data)
+
+      // Se a pessoa seguia/parou de seguir alguém e está no feed "Seguindo", é bom atualizar
+      if (feedType === 'following') {
+        const postsResponse = await api.get<PostType[]>('posts/following/')
+        setPosts(postsResponse.data)
+      }
+    } catch (error) {
+      console.error('Erro ao seguir/deixar de seguir:', error)
+    }
   }
 
   const isAnyModalOpen = showCreatePostModal
@@ -157,14 +171,15 @@ export default function FeedPage() {
 
       <RightSidebar
         trends={initialTrends}
-        whoToFollow={whoToFollow}
-        onFollowUser={handleFollowUser}
+        whoToFollow={whoToFollow} // Passa whoToFollow para RightSidebar
+        onFollowUser={handleFollowUser} // Passa o handler de seguir/deixar de seguir
+        isLoadingWhoToFollow={isLoadingWhoToFollow} // Passa o estado de carregamento
       />
 
       <CreatePostModal
         isOpen={showCreatePostModal}
         onClose={() => setShowCreatePostModal(false)}
-        onPostSubmit={handlePostSubmit} // Passa o handler real de submissão
+        onPostSubmit={handlePostSubmit}
         userAvatarUrl={loggedInUserAvatar}
       />
     </S.PageContainer>

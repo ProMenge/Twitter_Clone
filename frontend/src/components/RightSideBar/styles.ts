@@ -176,3 +176,17 @@ export const SidebarFooter = styled.div`
     }
   }
 `
+
+export const LoadingIndicator = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: ${colors.lightGray};
+  font-size: 16px;
+`
+
+export const NoSuggestionsMessage = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: ${colors.lightGray};
+  font-size: 16px;
+`

@@ -6,14 +6,14 @@ import logo from '../../assets/images/logo-white.png'
 import api from '../../services/api'
 import * as S from './styles'
 
+import { AxiosError } from 'axios'
 import type {
+  ApiValidationError,
   AuthSuccessResponse,
   LoginPayload,
   ModalAuthFormValues,
-  RegisterPayload,
-  ApiValidationError
+  RegisterPayload
 } from '../../types/index'
-import { AxiosError } from 'axios'
 
 interface ModalAuthProps {
   isOpen: boolean
