@@ -1,7 +1,6 @@
 import React from 'react'
 import * as S from './styles'
 
-// Importar os ícones necessários do react-icons
 import {
   FiHeart,
   FiMessageCircle,
@@ -11,18 +10,15 @@ import {
 } from 'react-icons/fi'
 import { IoStatsChart } from 'react-icons/io5'
 
-import { formatRelative, parseISO } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { type PostType } from '../../types'
+import type { PostType } from '../../types'
 
 interface PostProps {
-  post: PostType
+  post: PostType // Recebe o objeto post completo
+  // NOVO: Adicionar uma prop para lidar com o toggle de curtida
+  onLikeToggle: (postId: string | number, isCurrentlyLiked: boolean) => void
 }
 
-const Post: React.FC<PostProps> = ({ post }) => {
-  const relativeDate = formatRelative(parseISO(post.created_at), new Date(), {
-    locale: ptBR
-  })
+const Post: React.FC<PostProps> = ({ post, onLikeToggle }) => {
   return (
     <S.PostContainer>
       <S.AvatarWrapper
@@ -31,19 +27,15 @@ const Post: React.FC<PostProps> = ({ post }) => {
       <S.PostContentWrapper>
         <S.PostHeader>
           <S.UserInfo>
-            {/* Usar post.user.display_name e post.user.username */}
             <S.Username>{post.user.display_name}</S.Username>
             <S.Handle>@{post.user.username}</S.Handle>
-            <S.Timestamp>{relativeDate}</S.Timestamp>{' '}
-            {/* Usar created_at e formatar depois se precisar */}
+            <S.Timestamp>{post.created_at}</S.Timestamp>
           </S.UserInfo>
           <S.OptionsButton>
             <FiMoreHorizontal />
           </S.OptionsButton>
         </S.PostHeader>
-        {/* Usar post.text_content */}
         <S.PostText>{post.text_content}</S.PostText>
-        {/* Usar post.image */}
         {post.image && <S.PostImage src={post.image} alt="Post image" />}
         <S.PostActions>
           <S.ActionItem className="reply">
@@ -52,7 +44,11 @@ const Post: React.FC<PostProps> = ({ post }) => {
           <S.ActionItem className="retweet">
             <FiRepeat /> {post.reposts_count > 0 && post.reposts_count}
           </S.ActionItem>
-          <S.ActionItem className="like">
+          {/* NOVO: Botão de curtida com onClick */}
+          <S.ActionItem
+            className={`like ${post.is_liked_by_viewer ? 'liked' : ''}`} // Adicionar classe 'liked'
+            onClick={() => onLikeToggle(post.id, !!post.is_liked_by_viewer)} // Passar id do post e se está curtido
+          >
             <FiHeart /> {post.likes_count > 0 && post.likes_count}
           </S.ActionItem>
           <S.ActionItem className="views">

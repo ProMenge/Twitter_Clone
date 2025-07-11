@@ -27,11 +27,11 @@ const initialTrends: TrendType[] = [
 
 export default function FeedPage() {
   const [posts, setPosts] = useState<PostType[]>([])
-  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([]) // whoToFollow agora virá da API
+  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
   const [feedType, setFeedType] = useState<'forYou' | 'following'>('forYou')
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
-  const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true) // NOVO: Estado de carregamento para sugestões
+  const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
 
   const loggedInUserAvatar =
     'https://via.placeholder.com/48/008000/000000?text=YOU'
@@ -72,7 +72,7 @@ export default function FeedPage() {
   // === Lógica de Busca de Sugestões (useEffect) ===
   useEffect(() => {
     const fetchWhoToFollow = async () => {
-      setIsLoadingWhoToFollow(true) // Inicia carregamento
+      setIsLoadingWhoToFollow(true)
       try {
         const accessToken = localStorage.getItem('access_token')
         if (!accessToken) {
@@ -80,22 +80,25 @@ export default function FeedPage() {
             'Usuário não autenticado. Não é possível carregar sugestões.'
           )
           setWhoToFollow([])
-          setIsLoadingWhoToFollow(false) // Finaliza mesmo com erro
+          setIsLoadingWhoToFollow(false)
           return
         }
-        const response = await api.get<UserToFollowType[]>('/who-to-follow/')
+        const response = await api.get<UserToFollowType[]>(
+          'users/who-to-follow/'
+        )
         setWhoToFollow(response.data)
       } catch (error) {
         console.error('Erro ao buscar sugestões:', error)
         setWhoToFollow([])
       } finally {
-        setIsLoadingWhoToFollow(false) // Finaliza carregamento
+        setIsLoadingWhoToFollow(false)
       }
     }
 
     fetchWhoToFollow()
-  }, []) // Executa apenas uma vez ao montar o componente
+  }, [])
 
+  // === handlePostSubmit (já implementado) ===
   const handlePostSubmit = async (text: string, imageFile?: File) => {
     try {
       const formData = new FormData()
@@ -118,11 +121,11 @@ export default function FeedPage() {
     }
   }
 
+  // === handleFollowUser (já implementado) ===
   const handleFollowUser = async (
     userId: number | string,
     isCurrentlyFollowing: boolean
   ) => {
-    // NOVO: isCurrentlyFollowing para saber se é follow/unfollow
     try {
       if (isCurrentlyFollowing) {
         await api.delete(`users/${userId}/follow/`)
@@ -131,20 +134,51 @@ export default function FeedPage() {
         await api.post(`users/${userId}/follow/`)
         console.log(`Começou a seguir usuário ${userId}`)
       }
-      // Re-fetch a lista de sugestões e posts para refletir a mudança
-      // Uma abordagem mais otimista seria atualizar o estado local de whoToFollow e posts
-      // Mas para simplificar a demo, vamos re-buscar tudo.
-      const updatedWhoToFollowResponse =
-        await api.get<UserToFollowType[]>('/who-to-follow/')
+      const updatedWhoToFollowResponse = await api.get<UserToFollowType[]>(
+        'users/who-to-follow/'
+      )
       setWhoToFollow(updatedWhoToFollowResponse.data)
 
-      // Se a pessoa seguia/parou de seguir alguém e está no feed "Seguindo", é bom atualizar
       if (feedType === 'following') {
         const postsResponse = await api.get<PostType[]>('posts/following/')
         setPosts(postsResponse.data)
       }
     } catch (error) {
       console.error('Erro ao seguir/deixar de seguir:', error)
+    }
+  }
+
+  // === NOVO: handleLikeToggle (para curtir/descurtir posts) ===
+  const handleLikeToggle = async (
+    postId: string | number,
+    isCurrentlyLiked: boolean
+  ) => {
+    try {
+      // Faz a chamada POST para o endpoint de like/unlike (o backend faz o toggle)
+      await api.post(`posts/${postId}/like/`)
+      console.log(
+        `Post ${postId} ${isCurrentlyLiked ? 'descurtido' : 'curtido'}.`
+      )
+
+      // Atualização otimista do estado dos posts
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              is_liked_by_viewer: !isCurrentlyLiked, // Inverte o status de curtida
+              likes_count: isCurrentlyLiked
+                ? post.likes_count - 1
+                : post.likes_count + 1 // Ajusta o contador
+            }
+          }
+          return post
+        })
+      )
+    } catch (error) {
+      console.error('Erro ao curtir/descurtir post:', error)
+      // Aqui você pode adicionar lógica para reverter a atualização otimista
+      // ou exibir uma mensagem de erro para o usuário.
     }
   }
 
@@ -167,13 +201,14 @@ export default function FeedPage() {
         isLoadingPosts={isLoadingPosts}
         feedType={feedType}
         setFeedType={setFeedType}
+        onLikeToggle={handleLikeToggle}
       />
 
       <RightSidebar
         trends={initialTrends}
-        whoToFollow={whoToFollow} // Passa whoToFollow para RightSidebar
-        onFollowUser={handleFollowUser} // Passa o handler de seguir/deixar de seguir
-        isLoadingWhoToFollow={isLoadingWhoToFollow} // Passa o estado de carregamento
+        whoToFollow={whoToFollow}
+        onFollowUser={handleFollowUser}
+        isLoadingWhoToFollow={isLoadingWhoToFollow}
       />
 
       <CreatePostModal

@@ -1,15 +1,17 @@
 import React from 'react'
-import Post from '../Post/Post' // Caminho relativo para o componente Post
-import * as S from './styles' // Importa os estilos locais
-import type { PostType } from '../../types' // Importar PostType
+import type { PostType } from '../../types'
+import Post from '../Post/Post'
+import * as S from './styles'
 
 interface MainFeedProps {
-  posts: PostType[] // Array de posts para exibir
-  onOpenCreatePostModal: () => void // Handler para abrir o modal de criação de post
-  userAvatarUrl: string // URL do avatar do usuário logado (para a seção "O que está acontecendo?")
-  isLoadingPosts: boolean // NOVO: Estado de carregamento dos posts
-  feedType: 'forYou' | 'following' // NOVO: Tipo de feed ativo
-  setFeedType: (type: 'forYou' | 'following') => void // NOVO: Setter para o tipo de feed
+  posts: PostType[]
+  onOpenCreatePostModal: () => void
+  userAvatarUrl: string
+  isLoadingPosts: boolean
+  feedType: 'forYou' | 'following'
+  setFeedType: (type: 'forYou' | 'following') => void
+  // NOVO: Adicionar onLikeToggle nas props
+  onLikeToggle: (postId: string | number, isCurrentlyLiked: boolean) => void
 }
 
 const MainFeed: React.FC<MainFeedProps> = ({
@@ -18,12 +20,12 @@ const MainFeed: React.FC<MainFeedProps> = ({
   userAvatarUrl,
   isLoadingPosts,
   feedType,
-  setFeedType
+  setFeedType,
+  onLikeToggle // Desestruturar a nova prop
 }) => {
   return (
     <S.MainContentContainer>
       <S.FeedHeader>
-        {/* Usar feedType e setFeedType para controlar as tabs */}
         <S.FeedHeaderTab
           className={feedType === 'forYou' ? 'active' : ''}
           onClick={() => setFeedType('forYou')}
@@ -45,15 +47,19 @@ const MainFeed: React.FC<MainFeedProps> = ({
         </S.PostCreationSectionText>
       </S.PostCreationSection>
 
-      {/* Exibir loading ou posts */}
       {isLoadingPosts ? (
-        <S.LoadingIndicator>Carregando posts...</S.LoadingIndicator> // Adicione um estilo para isso em styles.ts
+        <S.LoadingIndicator>Carregando posts...</S.LoadingIndicator>
       ) : (
-        posts.map((post) => <Post key={post.id} post={post} />)
+        posts.map((post) => (
+          <Post
+            key={post.id}
+            post={post}
+            onLikeToggle={onLikeToggle} // <-- AGORA PASSAMOS A PROP PARA O COMPONENTE POST
+          />
+        ))
       )}
-      {/* Mensagem se não houver posts e não estiver carregando */}
       {!isLoadingPosts && posts.length === 0 && (
-        <S.NoPostsMessage>Nenhuma postagem para exibir.</S.NoPostsMessage> // Adicione um estilo para isso em styles.ts
+        <S.NoPostsMessage>Nenhuma postagem para exibir.</S.NoPostsMessage>
       )}
     </S.MainContentContainer>
   )
