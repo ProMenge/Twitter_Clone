@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom' // Importar useNavigate para redirecionamento
 import * as S from './styles'
 
 import logo from '../../assets/images/logo-white.png'
@@ -26,6 +27,7 @@ const initialTrends: TrendType[] = [
 ]
 
 export default function FeedPage() {
+  const navigate = useNavigate() // Instanciar useNavigate
   const [posts, setPosts] = useState<PostType[]>([])
   const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
@@ -33,8 +35,18 @@ export default function FeedPage() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
 
+  // NOVO: Obter dados do usuário logado do localStorage para passar à sidebar
+  // Em um app real, isso viria de um Context API de autenticação
+  const loggedInUserString = localStorage.getItem('user_data')
+  const loggedInUser = loggedInUserString
+    ? JSON.parse(loggedInUserString)
+    : null
   const loggedInUserAvatar =
+    loggedInUser?.avatar_url ||
     'https://via.placeholder.com/48/008000/000000?text=YOU'
+  const loggedInUsername = loggedInUser?.username || 'Usuário'
+  const loggedInDisplayName =
+    loggedInUser?.display_name || 'Usuário Desconhecido'
 
   // === Lógica de Busca de Posts (useEffect) ===
   useEffect(() => {
@@ -154,22 +166,20 @@ export default function FeedPage() {
     isCurrentlyLiked: boolean
   ) => {
     try {
-      // Faz a chamada POST para o endpoint de like/unlike (o backend faz o toggle)
       await api.post(`posts/${postId}/like/`)
       console.log(
         `Post ${postId} ${isCurrentlyLiked ? 'descurtido' : 'curtido'}.`
       )
 
-      // Atualização otimista do estado dos posts
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
           if (post.id === postId) {
             return {
               ...post,
-              is_liked_by_viewer: !isCurrentlyLiked, // Inverte o status de curtida
+              is_liked_by_viewer: !isCurrentlyLiked,
               likes_count: isCurrentlyLiked
                 ? post.likes_count - 1
-                : post.likes_count + 1 // Ajusta o contador
+                : post.likes_count + 1
             }
           }
           return post
@@ -177,9 +187,18 @@ export default function FeedPage() {
       )
     } catch (error) {
       console.error('Erro ao curtir/descurtir post:', error)
-      // Aqui você pode adicionar lógica para reverter a atualização otimista
-      // ou exibir uma mensagem de erro para o usuário.
     }
+  }
+
+  // === NOVO: handleLogout (para sair da conta) ===
+  const handleLogout = () => {
+    // Limpa os tokens e dados do usuário do localStorage
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_data')
+    console.log('Usuário deslogado.')
+    // Redireciona para a página inicial (login/registro)
+    navigate('/')
   }
 
   const isAnyModalOpen = showCreatePostModal
@@ -189,9 +208,10 @@ export default function FeedPage() {
       <LeftSidebar
         logoSrc={logo}
         userAvatarUrl={loggedInUserAvatar}
-        username="Fred."
-        userHandle="@FredMenge"
+        username={loggedInDisplayName} // Passar o display_name
+        userHandle={loggedInUsername} // Passar o username
         onPostButtonClick={() => setShowCreatePostModal(true)}
+        onLogout={handleLogout}
       />
 
       <MainFeed

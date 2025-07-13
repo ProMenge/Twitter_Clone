@@ -1,6 +1,8 @@
 import React from 'react'
 import * as S from './styles'
 
+import { formatRelative, parseISO } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import {
   FiHeart,
   FiMessageCircle,
@@ -19,6 +21,11 @@ interface PostProps {
 }
 
 const Post: React.FC<PostProps> = ({ post, onLikeToggle }) => {
+  const relativeDate = formatRelative(
+    parseISO(post.created_at), // Converte a string ISO para um objeto Date
+    new Date(), // Compara com a data/hora de agora
+    { locale: ptBR } // Usa o idioma português
+  )
   return (
     <S.PostContainer>
       <S.AvatarWrapper
@@ -29,7 +36,7 @@ const Post: React.FC<PostProps> = ({ post, onLikeToggle }) => {
           <S.UserInfo>
             <S.Username>{post.user.display_name}</S.Username>
             <S.Handle>@{post.user.username}</S.Handle>
-            <S.Timestamp>{post.created_at}</S.Timestamp>
+            <S.Timestamp>{relativeDate}</S.Timestamp>
           </S.UserInfo>
           <S.OptionsButton>
             <FiMoreHorizontal />

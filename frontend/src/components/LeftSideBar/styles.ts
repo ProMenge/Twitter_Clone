@@ -143,6 +143,7 @@ export const UserInfoContainer = styled.div`
   transition: background-color 0.2s ease-in-out;
   width: fit-content;
   align-self: flex-start;
+  position: relative; /* ADICIONADO: Essencial para posicionar o LogoutDropdown */
 
   &:hover {
     background-color: #1a1a1a;
@@ -153,6 +154,8 @@ export const UserInfoContainer = styled.div`
     height: 40px;
     border-radius: 50%;
     background-color: gray;
+    background-size: cover;
+    background-position: center;
   }
 
   .text-info {
