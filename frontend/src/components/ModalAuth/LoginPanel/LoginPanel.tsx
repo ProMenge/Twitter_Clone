@@ -1,17 +1,17 @@
-// src/components/ModalAuth/LoginPanel/index.tsx
+import { AxiosError } from 'axios'
 import { type FormikErrors, type FormikHelpers, useFormik } from 'formik'
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import * as Yup from 'yup'
+import { useNavigate } from 'react-router-dom' // Importar useNavigate
+import * as Yup from 'yup' // Importar Yup
 import api from '../../../services/api'
 
-import { AxiosError } from 'axios'
 import type {
-  ApiValidationError,
-  AuthSuccessResponse,
+  ApiValidationError, // Importar ApiValidationError
+  AuthSuccessResponse, // Ainda vamos usar esta interface para o Formik, mas apenas os campos relevantes
   LoginPayload,
   ModalAuthFormValues
-} from '../../../types'
+} from '../../../types' // Importar os tipos globais
+
 import * as S from '../styles' // Importar os Styled Components do ModalAuth pai
 
 interface LoginPanelProps {
@@ -19,48 +19,47 @@ interface LoginPanelProps {
   setGeneralError: React.Dispatch<React.SetStateAction<string | null>> // Para exibir erros gerais no modal pai
 }
 
+interface LoginFormValues {
+  username_or_email: string
+  password: string
+}
+
 const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
   const navigate = useNavigate()
 
-  // Schema de validação específico para o login
   const loginSchema = Yup.object().shape({
     username_or_email: Yup.string().required(
       'Celular, e-mail ou nome de usuário é obrigatório'
     ),
     password: Yup.string().required('Senha obrigatória')
   })
-
-  const formik = useFormik<ModalAuthFormValues>({
-    // Tipar com ModalAuthFormValues para consistência
+  const formik = useFormik<LoginFormValues>({
     initialValues: {
       username_or_email: '',
       password: ''
-      // Outros campos de registro não são necessários aqui, mas o Formik aceitará.
-      // Poderíamos ter uma interface LoginValues separada se fosse 100% isolado.
-    } as ModalAuthFormValues, // Type assertion para garantir que os campos ausentes sejam tratados como opcionais
+    },
     validationSchema: loginSchema,
     onSubmit: async (
-      values: ModalAuthFormValues,
+      values: LoginFormValues, // Tipagem explícita para 'values' como LoginFormValues
       {
         setSubmitting,
         setErrors: setFormikErrors
-      }: FormikHelpers<ModalAuthFormValues>
+      }: FormikHelpers<LoginFormValues> // Tipagem explícita
     ) => {
-      setGeneralError(null) // Limpar erros gerais do pai
+      setGeneralError(null)
       setSubmitting(true)
       try {
         const payload: LoginPayload = {
-          username_or_email: values.username_or_email!, // Usar ! pois é requerido pelo schema
-          password: values.password! // Usar !
+          username_or_email: values.username_or_email, // Não precisa de '!' aqui, schema já garante
+          password: values.password // Não precisa de '!' aqui
         }
-
         const response = await api.post<AuthSuccessResponse>('login/', payload)
 
         localStorage.setItem('access_token', response.data.access_token)
         localStorage.setItem('refresh_token', response.data.refresh_token || '')
         localStorage.setItem('user_data', JSON.stringify(response.data.user))
-
         console.log('Login bem-sucedido:', response.data)
+
         onClose() // Fechar o modal
         navigate('/feed') // Redirecionar
       } catch (error) {
@@ -98,7 +97,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
       <S.Input
         name="username_or_email"
         placeholder="Celular, e-mail ou nome de usuário"
-        value={formik.values.username_or_email || ''}
+        value={formik.values.username_or_email} // Não precisa de || '' se o initialValues for string
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
       />
@@ -109,21 +108,20 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
         name="password"
         placeholder="Senha"
         type="password"
-        value={formik.values.password || ''}
+        value={formik.values.password} // Não precisa de || '' se o initialValues for string
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
       />
       {formik.touched.password && formik.errors.password && (
         <S.Error>{formik.errors.password}</S.Error>
       )}
-
       <S.AdvanceButton
         type="submit"
         disabled={!formik.isValid || formik.isSubmitting}
       >
         {formik.isSubmitting ? 'Entrando...' : 'Entrar'}
       </S.AdvanceButton>
-      <S.ForgotPassword href="#">Esqueceu sua senha?</S.ForgotPassword>
+      <S.ForgotPassword href="#">Esqueceu sua senha?</S.ForgotPassword>{' '}
     </form>
   )
 }
