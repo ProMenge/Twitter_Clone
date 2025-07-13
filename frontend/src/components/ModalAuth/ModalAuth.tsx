@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type FormikErrors, type FormikHelpers, useFormik } from 'formik'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -6,6 +7,7 @@ import logo from '../../assets/images/logo-white.png'
 import api from '../../services/api'
 import * as S from './styles'
 
+// Importar as interfaces de tipos
 import { AxiosError } from 'axios'
 import type {
   ApiValidationError,
@@ -14,6 +16,8 @@ import type {
   ModalAuthFormValues,
   RegisterPayload
 } from '../../types/index'
+
+// Importar o novo componente LoginPanel
 
 interface ModalAuthProps {
   isOpen: boolean
@@ -34,9 +38,10 @@ export default function ModalAuth({
   const [generalError, setGeneralError] = useState<string | null>(null)
   const dynamicSchema = Yup.lazy<Yup.ObjectSchema<ModalAuthFormValues>>(
     (values) => {
-      const currentType = values._type_context
-      const currentStep = values._step_context
-      const currentUseEmailForContact = values._useEmailForContact_context
+      const context = values as any
+      const currentType = context._type_context
+      const currentStep = context._step_context
+      const currentUseEmailForContact = context._useEmailForContact_context
 
       if (currentType === 'register') {
         return Yup.object<ModalAuthFormValues>().shape({
@@ -157,7 +162,6 @@ export default function ModalAuth({
             return
           }
 
-          // Lógica de chamada API para Registro (passo 2)
           try {
             const monthMap: { [key: string]: string } = {
               Janeiro: '01',
@@ -187,8 +191,7 @@ export default function ModalAuth({
               birth_date: birthDate
             }
 
-            if (!values._useEmailForContact_context) {
-              // Usar o valor do contexto
+            if (!useEmailForContact) {
               payload.username = values.contact!
               payload.email = `temp_${Date.now()}@example.com`
             }

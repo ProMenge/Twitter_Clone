@@ -145,7 +145,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
         ></div>
         <div className="text-info">
           <span className="username">{username}</span>
-          <span className="handle">{userHandle}</span>
+          <span className="handle">@{userHandle}</span>
         </div>
 
         {/* Renderiza o LogoutDropdown condicionalmente */}

@@ -95,9 +95,7 @@ export default function FeedPage() {
           setIsLoadingWhoToFollow(false)
           return
         }
-        const response = await api.get<UserToFollowType[]>(
-          'users/who-to-follow/'
-        )
+        const response = await api.get<UserToFollowType[]>('/who-to-follow/')
         setWhoToFollow(response.data)
       } catch (error) {
         console.error('Erro ao buscar sugestões:', error)
@@ -146,9 +144,8 @@ export default function FeedPage() {
         await api.post(`users/${userId}/follow/`)
         console.log(`Começou a seguir usuário ${userId}`)
       }
-      const updatedWhoToFollowResponse = await api.get<UserToFollowType[]>(
-        'users/who-to-follow/'
-      )
+      const updatedWhoToFollowResponse =
+        await api.get<UserToFollowType[]>('who-to-follow/')
       setWhoToFollow(updatedWhoToFollowResponse.data)
 
       if (feedType === 'following') {
