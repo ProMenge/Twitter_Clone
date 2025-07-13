@@ -1,22 +1,20 @@
 import { AxiosError } from 'axios'
 import { type FormikErrors, type FormikHelpers, useFormik } from 'formik'
 import React from 'react'
-import { useNavigate } from 'react-router-dom' // Importar useNavigate
-import * as Yup from 'yup' // Importar Yup
+import { useNavigate } from 'react-router-dom'
+import * as Yup from 'yup'
 import api from '../../../services/api'
-
 import type {
-  ApiValidationError, // Importar ApiValidationError
-  AuthSuccessResponse, // Ainda vamos usar esta interface para o Formik, mas apenas os campos relevantes
+  ApiValidationError,
+  AuthSuccessResponse,
   LoginPayload,
   ModalAuthFormValues
-} from '../../../types' // Importar os tipos globais
-
-import * as S from '../styles' // Importar os Styled Components do ModalAuth pai
+} from '../../../types'
+import * as S from '../styles'
 
 interface LoginPanelProps {
   onClose: () => void // Para fechar o modal principal após o login
-  setGeneralError: React.Dispatch<React.SetStateAction<string | null>> // Para exibir erros gerais no modal pai
+  setGeneralError: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 interface LoginFormValues {
@@ -40,18 +38,18 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
     },
     validationSchema: loginSchema,
     onSubmit: async (
-      values: LoginFormValues, // Tipagem explícita para 'values' como LoginFormValues
+      values: LoginFormValues,
       {
         setSubmitting,
         setErrors: setFormikErrors
-      }: FormikHelpers<LoginFormValues> // Tipagem explícita
+      }: FormikHelpers<LoginFormValues>
     ) => {
       setGeneralError(null)
       setSubmitting(true)
       try {
         const payload: LoginPayload = {
-          username_or_email: values.username_or_email, // Não precisa de '!' aqui, schema já garante
-          password: values.password // Não precisa de '!' aqui
+          username_or_email: values.username_or_email,
+          password: values.password
         }
         const response = await api.post<AuthSuccessResponse>('login/', payload)
 
@@ -60,8 +58,8 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
         localStorage.setItem('user_data', JSON.stringify(response.data.user))
         console.log('Login bem-sucedido:', response.data)
 
-        onClose() // Fechar o modal
-        navigate('/feed') // Redirecionar
+        onClose()
+        navigate('/feed')
       } catch (error) {
         if (error instanceof AxiosError && error.response) {
           const responseData = error.response.data as ApiValidationError
@@ -97,7 +95,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
       <S.Input
         name="username_or_email"
         placeholder="Celular, e-mail ou nome de usuário"
-        value={formik.values.username_or_email} // Não precisa de || '' se o initialValues for string
+        value={formik.values.username_or_email}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
       />
@@ -108,7 +106,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
         name="password"
         placeholder="Senha"
         type="password"
-        value={formik.values.password} // Não precisa de || '' se o initialValues for string
+        value={formik.values.password}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
       />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom' // Importar useNavigate para redirecionamento
+import { useNavigate } from 'react-router-dom'
 import * as S from './styles'
 
 import logo from '../../assets/images/logo-white.png'
@@ -27,7 +27,7 @@ const initialTrends: TrendType[] = [
 ]
 
 export default function FeedPage() {
-  const navigate = useNavigate() // Instanciar useNavigate
+  const navigate = useNavigate()
   const [posts, setPosts] = useState<PostType[]>([])
   const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
@@ -35,8 +35,6 @@ export default function FeedPage() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
 
-  // NOVO: Obter dados do usuário logado do localStorage para passar à sidebar
-  // Em um app real, isso viria de um Context API de autenticação
   const loggedInUserString = localStorage.getItem('user_data')
   const loggedInUser = loggedInUserString
     ? JSON.parse(loggedInUserString)
@@ -108,7 +106,6 @@ export default function FeedPage() {
     fetchWhoToFollow()
   }, [])
 
-  // === handlePostSubmit (já implementado) ===
   const handlePostSubmit = async (text: string, imageFile?: File) => {
     try {
       const formData = new FormData()
@@ -131,7 +128,6 @@ export default function FeedPage() {
     }
   }
 
-  // === handleFollowUser (já implementado) ===
   const handleFollowUser = async (
     userId: number | string,
     isCurrentlyFollowing: boolean
@@ -157,7 +153,6 @@ export default function FeedPage() {
     }
   }
 
-  // === NOVO: handleLikeToggle (para curtir/descurtir posts) ===
   const handleLikeToggle = async (
     postId: string | number,
     isCurrentlyLiked: boolean
@@ -187,14 +182,12 @@ export default function FeedPage() {
     }
   }
 
-  // === NOVO: handleLogout (para sair da conta) ===
   const handleLogout = () => {
-    // Limpa os tokens e dados do usuário do localStorage
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user_data')
     console.log('Usuário deslogado.')
-    // Redireciona para a página inicial (login/registro)
+
     navigate('/')
   }
 
@@ -205,8 +198,8 @@ export default function FeedPage() {
       <LeftSidebar
         logoSrc={logo}
         userAvatarUrl={loggedInUserAvatar}
-        username={loggedInDisplayName} // Passar o display_name
-        userHandle={loggedInUsername} // Passar o username
+        username={loggedInDisplayName}
+        userHandle={loggedInUsername}
         onPostButtonClick={() => setShowCreatePostModal(true)}
         onLogout={handleLogout}
       />

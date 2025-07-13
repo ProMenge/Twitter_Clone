@@ -1,22 +1,8 @@
-import { type FormikErrors, type FormikHelpers, useFormik } from 'formik'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import * as Yup from 'yup'
 import logo from '../../assets/images/logo-white.png'
-import api from '../../services/api'
-import * as S from './styles'
-
-// Importar as interfaces de tipos
-import { AxiosError } from 'axios'
-import type {
-  ApiValidationError,
-  AuthSuccessResponse,
-  ModalAuthFormValues,
-  RegisterPayload
-} from '../../types/index'
-
 import LoginPanel from './LoginPanel/LoginPanel'
 import RegisterPanel from './RegisterPanel/RegisterPanel'
+import * as S from './styles'
 
 interface ModalAuthProps {
   isOpen: boolean
@@ -31,218 +17,8 @@ export default function ModalAuth({
   title,
   type
 }: ModalAuthProps) {
-  const navigate = useNavigate()
-  const [step, setStep] = useState(1)
-  const [useEmailForContact, setUseEmailForContact] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
-
-  const dynamicSchema = Yup.lazy<Yup.ObjectSchema<ModalAuthFormValues>>(
-    (values) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const context = values as any
-      const currentStep = context._step_context
-      const currentUseEmailForContact = context._useEmailForContact_context
-
-      return Yup.object().shape({
-        name: Yup.string().required('Nome obrigatório'),
-        contact: Yup.string()
-          .required('Celular ou e-mail obrigatório')
-          .test(
-            'is-contact-valid',
-            'Celular ou e-mail inválido',
-            function (value) {
-              const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value || '')
-              const isPhone = /^\d+$/.test(value || '')
-              if (currentUseEmailForContact) {
-                return isEmail
-              } else {
-                return isEmail || isPhone
-              }
-            }
-          ),
-        birthMonth: Yup.string().required('Selecione o mês'),
-        birthDay: Yup.string().required('Selecione o dia'),
-        birthYear: Yup.string().required('Selecione o ano'),
-        password: Yup.string().when('_step_context', {
-          is: 2,
-          then: (schema) =>
-            schema
-              .required('Senha obrigatória')
-              .min(6, 'A senha deve ter no mínimo 6 caracteres'),
-          otherwise: (schema) => schema.notRequired()
-        }),
-        confirm_password: Yup.string().when('password', {
-          is: (val: string) => currentStep === 2 && !!val,
-          then: (schema) =>
-            schema
-              .required('Confirmação de senha obrigatória')
-              .oneOf([Yup.ref('password')], 'As senhas não coincidem'),
-          otherwise: (schema) => schema.notRequired()
-        }),
-        username_or_email: Yup.string().notRequired(),
-
-        _type_context: Yup.mixed<'login' | 'register'>()
-          .oneOf(['login', 'register'])
-          .nullable()
-          .notRequired(),
-        _step_context: Yup.number().notRequired(),
-        _useEmailForContact_context: Yup.boolean().notRequired()
-      })
-    }
-  )
-
-  const formik = useFormik<ModalAuthFormValues>({
-    initialValues: {
-      name: '',
-      contact: '',
-      birthMonth: '',
-      birthDay: '',
-      birthYear: '',
-      password: '',
-      confirm_password: '',
-      username_or_email: '',
-      _type_context: type,
-      _step_context: step,
-      _useEmailForContact_context: useEmailForContact
-    },
-    validationSchema: dynamicSchema,
-    onSubmit: async (
-      values: ModalAuthFormValues,
-      {
-        setSubmitting,
-        setErrors: setFormikErrors
-      }: FormikHelpers<ModalAuthFormValues>
-    ) => {
-      setGeneralError(null)
-      setSubmitting(true)
-
-      if (type === 'register') {
-        if (step === 1) {
-          const errors = await formik.validateForm(values)
-
-          if (
-            !errors.name &&
-            !errors.contact &&
-            !errors.birthMonth &&
-            !errors.birthDay &&
-            !errors.birthYear
-          ) {
-            setStep(2)
-          } else {
-            setFormikErrors(errors)
-          }
-          setSubmitting(false)
-          return
-        } else if (step === 2) {
-          const errors = await formik.validateForm(values)
-          if (Object.keys(errors).length > 0) {
-            setFormikErrors(errors)
-            setSubmitting(false)
-            return
-          }
-
-          try {
-            const monthMap: { [key: string]: string } = {
-              Janeiro: '01',
-              Fevereiro: '02',
-              Março: '03',
-              Abril: '04',
-              Maio: '05',
-              Junho: '06',
-              Julho: '07',
-              Agosto: '08',
-              Setembro: '09',
-              Outubro: '10',
-              Novembro: '11',
-              Dezembro: '12'
-            }
-            const birthMonthNum = monthMap[values.birthMonth!]
-            const birthDayPadded = values.birthDay!.padStart(2, '0')
-            const birthDate = `${values.birthYear!}-${birthMonthNum}-${birthDayPadded}`
-
-            const payload: RegisterPayload = {
-              username:
-                values.name!.replace(/\s/g, '').toLowerCase() +
-                Math.floor(Math.random() * 10000),
-              display_name: values.name!,
-              email: values.contact!,
-              password: values.password!,
-              birth_date: birthDate
-            }
-
-            if (!useEmailForContact) {
-              payload.username = values.contact!
-              payload.email = `temp_${Date.now()}@example.com`
-            }
-
-            const response = await api.post<AuthSuccessResponse>(
-              'register/',
-              payload
-            )
-
-            localStorage.setItem('access_token', response.data.access_token)
-            localStorage.setItem(
-              'user_data',
-              JSON.stringify(response.data.user)
-            )
-
-            console.log('Registro bem-sucedido:', response.data)
-            onClose()
-            navigate('/feed')
-          } catch (error) {
-            if (error instanceof AxiosError && error.response) {
-              const responseData = error.response.data as ApiValidationError
-              const apiErrors: FormikErrors<ModalAuthFormValues> = {}
-
-              if (responseData.username)
-                apiErrors.name = responseData.username[0]
-              if (responseData.email) apiErrors.contact = responseData.email[0]
-              if (responseData.password)
-                apiErrors.password = responseData.password[0]
-              if (responseData.non_field_errors)
-                setGeneralError(responseData.non_field_errors[0])
-
-              setFormikErrors(apiErrors)
-
-              if (
-                !Object.keys(apiErrors).length &&
-                !responseData.non_field_errors
-              ) {
-                setGeneralError('Erro no registro. Tente novamente.')
-              }
-            } else {
-              setGeneralError('Erro de conexão ou servidor. Tente mais tarde.')
-              console.error('Erro não relacionado à API:', error)
-            }
-          } finally {
-            setSubmitting(false)
-          }
-        }
-      }
-    }
-  })
-
-  const months = [
-    'Janeiro',
-    'Fevereiro',
-    'Março',
-    'Abril',
-    'Maio',
-    'Junho',
-    'Julho',
-    'Agosto',
-    'Setembro',
-    'Outubro',
-    'Novembro',
-    'Dezembro'
-  ]
-
-  useEffect(() => {
-    formik.setFieldValue('_type_context', type)
-    formik.setFieldValue('_step_context', step)
-    formik.setFieldValue('_useEmailForContact_context', useEmailForContact)
-  }, [type, step, useEmailForContact, formik.setFieldValue])
-
+  useEffect(() => {}, [type])
   if (!isOpen) return null
 
   return (
@@ -251,21 +27,10 @@ export default function ModalAuth({
         <S.CloseButton onClick={onClose}>×</S.CloseButton>
         <S.Logo src={logo} alt="Logo X" />
         <S.Title>{title}</S.Title>
-
         {generalError && <S.Error>{generalError}</S.Error>}
-
         {type === 'register' ? (
-          <RegisterPanel
-            formik={formik}
-            step={step}
-            setStep={setStep}
-            useEmailForContact={useEmailForContact}
-            setUseEmailForContact={setUseEmailForContact}
-            months={months}
-            generalError={generalError}
-          />
+          <RegisterPanel setGeneralError={setGeneralError} onClose={onClose} />
         ) : (
-          // LoginPanel agora é autônomo, mas precisa das funções de retorno de chamada
           <LoginPanel onClose={onClose} setGeneralError={setGeneralError} />
         )}
       </S.Modal>
