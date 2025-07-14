@@ -72,8 +72,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "twitter_clone_db",          # <-- O nome do DB que você criou no pgAdmin
+        "USER": "twitter_clone_user",       # <-- O nome do usuário que você criou no pgAdmin
+        "PASSWORD": "Teste123!", # <-- A senha que você definiu para 'twitter_clone_user'
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
