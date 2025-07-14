@@ -1,34 +1,21 @@
 import React from 'react'
-import { FiSearch } from 'react-icons/fi' // Ícone de busca
-import * as S from './styles' // Importa os estilos locais
+import { FiSearch } from 'react-icons/fi'
+import * as S from './styles'
 
-// Reutilizando interfaces de tipos que já temos
-interface TrendType {
-  category: string
-  hashtag: string
-  tweets: string
-}
+import type { TrendType, UserToFollowType } from '../../types'
 
-interface UserToFollowType {
-  id: string
-  avatarUrl: string
-  username: string
-  handle: string
-  // Adiciona a prop opcional isFollowing, que você pode querer controlar aqui
-  isFollowing?: boolean
-}
-
-// Definindo as props que este componente RightSidebar irá receber
 interface RightSidebarProps {
-  trends: TrendType[] // Array de tendências
-  whoToFollow: UserToFollowType[] // Array de sugestões de quem seguir
-  onFollowUser: (userId: string) => void // Handler para a ação de seguir/deixar de seguir
+  trends: TrendType[]
+  whoToFollow: UserToFollowType[] // Recebe o array de UserToFollowType
+  onFollowUser: (userId: number | string, isCurrentlyFollowing: boolean) => void
+  isLoadingWhoToFollow: boolean // NOVO: Estado de carregamento
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({
   trends,
   whoToFollow,
-  onFollowUser
+  onFollowUser,
+  isLoadingWhoToFollow // Desestruturar nova prop
 }) => {
   return (
     <S.RightSidebarContainer>
@@ -62,28 +49,44 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       {/* Quem seguir Section */}
       <S.SectionBox>
         <S.SectionTitle>Quem seguir</S.SectionTitle>
-        {whoToFollow.map((user) => (
-          <S.WhoToFollowItem key={user.id}>
-            <div className="user-info">
-              <div
-                className="avatar"
-                style={{
-                  backgroundImage: `url(${user.avatarUrl})`,
-                  backgroundSize: 'cover'
-                }}
-              ></div>
-              <div className="text-details">
-                <span className="username">{user.username}</span>
-                <span className="handle">{user.handle}</span>
-              </div>
-            </div>
-            {/* O texto do botão pode ser condicional se houver isFollowing */}
-            <S.FollowButton onClick={() => onFollowUser(user.id)}>
-              {user.isFollowing ? 'Seguindo' : 'Seguir'}{' '}
-              {/* Texto condicional */}
-            </S.FollowButton>
-          </S.WhoToFollowItem>
-        ))}
+        {isLoadingWhoToFollow ? ( // Exibir carregando ou sugestões
+          <S.LoadingIndicator>Carregando sugestões...</S.LoadingIndicator> // Adicione este estilo em styles.ts
+        ) : (
+          <>
+            {whoToFollow.length === 0 ? (
+              <S.NoSuggestionsMessage>
+                Nenhuma sugestão para exibir.
+              </S.NoSuggestionsMessage> // Adicione este estilo em styles.ts
+            ) : (
+              whoToFollow.map((user) => (
+                <S.WhoToFollowItem key={user.id}>
+                  <div className="user-info">
+                    <div
+                      className="avatar"
+                      style={{
+                        backgroundImage: `url(${user.avatar_url})`, // Usar user.avatar_url
+                        backgroundSize: 'cover'
+                      }}
+                    ></div>
+                    <div className="text-details">
+                      <span className="username">{user.display_name}</span>{' '}
+                      {/* Usar display_name */}
+                      <span className="handle">@{user.username}</span>{' '}
+                      {/* Usar username */}
+                    </div>
+                  </div>
+                  <S.FollowButton
+                    onClick={() =>
+                      onFollowUser(user.id, !!user.is_followed_by_viewer)
+                    } // Passar id e is_followed_by_viewer
+                  >
+                    {user.is_followed_by_viewer ? 'Seguindo' : 'Seguir'}
+                  </S.FollowButton>
+                </S.WhoToFollowItem>
+              ))
+            )}
+          </>
+        )}
       </S.SectionBox>
 
       {/* Footer da Sidebar Direita */}

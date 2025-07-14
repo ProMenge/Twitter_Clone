@@ -102,44 +102,51 @@ export const PostActions = styled.div`
 export const ActionItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px; /* Espaço entre o ícone e o número */
+  gap: 6px;
   font-size: 13px;
   cursor: pointer;
   transition: color 0.2s ease-in-out;
 
-  /* Estilo base para os ícones */
   svg {
-    font-size: 18px; /* Tamanho dos ícones de ação */
+    font-size: 18px;
     transition: color 0.2s ease-in-out;
   }
 
   /* Hover states for specific icons */
   &.reply:hover {
-    color: #1d9bf0; /* Azul do X */
+    color: #1d9bf0;
     svg {
       color: #1d9bf0;
     }
   }
   &.retweet:hover {
-    color: #00ba7c; /* Verde do X */
+    color: #00ba7c;
     svg {
       color: #00ba7c;
     }
   }
   &.like:hover {
-    color: #f91880; /* Rosa do X */
+    color: #f91880;
     svg {
       color: #f91880;
     }
   }
+  /* NOVO: Estilo para o estado 'liked' */
+  &.like.liked {
+    color: #f91880; /* Cor rosa quando já está curtido */
+    svg {
+      color: #f91880;
+      fill: #f91880; /* Preenche o coração quando curtido */
+    }
+  }
   &.views:hover {
-    color: #1d9bf0; /* Azul do X */
+    color: #1d9bf0;
     svg {
       color: #1d9bf0;
     }
   }
   &.share:hover {
-    color: #1d9bf0; /* Azul do X */
+    color: #1d9bf0;
     svg {
       color: #1d9bf0;
     }

@@ -1,72 +1,61 @@
-import * as S from './styles'
 import React from 'react'
+import * as S from './styles'
 
-// Importar os ícones necessários do react-icons
+import { formatRelative, parseISO } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import {
-  FiMessageCircle,
-  FiRepeat,
   FiHeart,
-  FiShare,
-  FiMoreHorizontal
+  FiMessageCircle,
+  FiMoreHorizontal,
+  FiRepeat,
+  FiShare
 } from 'react-icons/fi'
-import { IoStatsChart } from 'react-icons/io5' // Ícone de visualizações
+import { IoStatsChart } from 'react-icons/io5'
+import type { PostType } from '../../types'
 
-// Definindo a interface para as props do componente Post
 interface PostProps {
-  id: string
-  avatarUrl: string
-  username: string
-  handle: string
-  text: string
-  timestamp: string
-  comments: number
-  retweets: number
-  likes: number
-  views: string // Mantido como string porque pode ser "23 mil"
-  imageUrl?: string // Opcional, se o post tiver uma imagem
+  post: PostType
+  onLikeToggle: (postId: string | number, isCurrentlyLiked: boolean) => void
 }
 
-const Post: React.FC<PostProps> = ({
-  avatarUrl,
-  username,
-  handle,
-  text,
-  timestamp,
-  comments,
-  retweets,
-  likes,
-  views,
-  imageUrl
-}) => {
+const Post: React.FC<PostProps> = ({ post, onLikeToggle }) => {
+  const relativeDate = formatRelative(parseISO(post.created_at), new Date(), {
+    locale: ptBR
+  })
   return (
     <S.PostContainer>
-      <S.AvatarWrapper style={{ backgroundImage: `url(${avatarUrl})` }} />
+      <S.AvatarWrapper
+        style={{ backgroundImage: `url(${post.user.avatar_url})` }}
+      />
       <S.PostContentWrapper>
         <S.PostHeader>
           <S.UserInfo>
-            <S.Username>{username}</S.Username>
-            <S.Handle>{handle}</S.Handle>
-            <S.Timestamp>{timestamp}</S.Timestamp>
+            <S.Username>{post.user.display_name}</S.Username>
+            <S.Handle>@{post.user.username}</S.Handle>
+            <S.Timestamp>{relativeDate}</S.Timestamp>
           </S.UserInfo>
           <S.OptionsButton>
             <FiMoreHorizontal />
-          </S.OptionsButton>{' '}
-          {/* Botão de opções (reticências) */}
+          </S.OptionsButton>
         </S.PostHeader>
-        <S.PostText>{text}</S.PostText>
-        {imageUrl && <S.PostImage src={imageUrl} alt="Post image" />}
+        <S.PostText>{post.text_content}</S.PostText>
+        {post.image && <S.PostImage src={post.image} alt="Post image" />}
         <S.PostActions>
           <S.ActionItem className="reply">
-            <FiMessageCircle /> {comments > 0 && comments}
+            <FiMessageCircle /> {post.comments_count > 0 && post.comments_count}
           </S.ActionItem>
           <S.ActionItem className="retweet">
-            <FiRepeat /> {retweets > 0 && retweets}
+            <FiRepeat /> {post.reposts_count > 0 && post.reposts_count}
           </S.ActionItem>
-          <S.ActionItem className="like">
-            <FiHeart /> {likes > 0 && likes}
+
+          <S.ActionItem
+            className={`like ${post.is_liked_by_viewer ? 'liked' : ''}`}
+            onClick={() => onLikeToggle(post.id, !!post.is_liked_by_viewer)}
+          >
+            <FiHeart /> {post.likes_count > 0 && post.likes_count}
           </S.ActionItem>
           <S.ActionItem className="views">
-            <IoStatsChart /> {views}
+            <IoStatsChart /> {post.views_count}
           </S.ActionItem>
           <S.ActionItem className="share">
             <FiShare />

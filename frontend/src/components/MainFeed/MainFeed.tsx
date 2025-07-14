@@ -1,42 +1,43 @@
 import React from 'react'
-import Post from '../Post/Post' // Caminho relativo para o componente Post
-import * as S from './styles' // Importa os estilos locais
+import type { PostType } from '../../types'
+import Post from '../Post/Post'
+import * as S from './styles'
 
-// Reutilizando a interface de tipos PostType
-interface PostType {
-  id: string
-  avatarUrl: string
-  username: string
-  handle: string
-  text: string
-  timestamp: string
-  comments: number
-  retweets: number
-  likes: number
-  views: string
-  imageUrl?: string
-}
-
-// Definindo as props que este componente MainFeed irá receber
 interface MainFeedProps {
-  posts: PostType[] // Array de posts para exibir
-  onOpenCreatePostModal: () => void // Handler para abrir o modal de criação de post
-  // onPostSubmit é uma prop para o CreatePostModal, não para o MainFeed.
-  // Será passado de FeedPage para CreatePostModal diretamente.
-  // User avatar URL for the "What's happening?" section
+  posts: PostType[]
+  onOpenCreatePostModal: () => void
   userAvatarUrl: string
+  isLoadingPosts: boolean
+  feedType: 'forYou' | 'following'
+  setFeedType: (type: 'forYou' | 'following') => void
+  // NOVO: Adicionar onLikeToggle nas props
+  onLikeToggle: (postId: string | number, isCurrentlyLiked: boolean) => void
 }
 
 const MainFeed: React.FC<MainFeedProps> = ({
   posts,
   onOpenCreatePostModal,
-  userAvatarUrl
+  userAvatarUrl,
+  isLoadingPosts,
+  feedType,
+  setFeedType,
+  onLikeToggle // Desestruturar a nova prop
 }) => {
   return (
     <S.MainContentContainer>
       <S.FeedHeader>
-        <S.FeedHeaderTab className="active">Para você</S.FeedHeaderTab>
-        <S.FeedHeaderTab>Seguindo</S.FeedHeaderTab>
+        <S.FeedHeaderTab
+          className={feedType === 'forYou' ? 'active' : ''}
+          onClick={() => setFeedType('forYou')}
+        >
+          Para você
+        </S.FeedHeaderTab>
+        <S.FeedHeaderTab
+          className={feedType === 'following' ? 'active' : ''}
+          onClick={() => setFeedType('following')}
+        >
+          Seguindo
+        </S.FeedHeaderTab>
       </S.FeedHeader>
 
       <S.PostCreationSection onClick={onOpenCreatePostModal}>
@@ -46,22 +47,20 @@ const MainFeed: React.FC<MainFeedProps> = ({
         </S.PostCreationSectionText>
       </S.PostCreationSection>
 
-      {posts.map((post) => (
-        <Post
-          key={post.id}
-          id={post.id}
-          avatarUrl={post.avatarUrl}
-          username={post.username}
-          handle={post.handle}
-          text={post.text}
-          timestamp={post.timestamp}
-          comments={post.comments}
-          retweets={post.retweets}
-          likes={post.likes}
-          views={post.views}
-          imageUrl={post.imageUrl}
-        />
-      ))}
+      {isLoadingPosts ? (
+        <S.LoadingIndicator>Carregando posts...</S.LoadingIndicator>
+      ) : (
+        posts.map((post) => (
+          <Post
+            key={post.id}
+            post={post}
+            onLikeToggle={onLikeToggle} // <-- AGORA PASSAMOS A PROP PARA O COMPONENTE POST
+          />
+        ))
+      )}
+      {!isLoadingPosts && posts.length === 0 && (
+        <S.NoPostsMessage>Nenhuma postagem para exibir.</S.NoPostsMessage>
+      )}
     </S.MainContentContainer>
   )
 }

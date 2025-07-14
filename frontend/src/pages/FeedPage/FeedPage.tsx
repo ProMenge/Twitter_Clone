@@ -1,39 +1,17 @@
-import { useState } from 'react'
-import * as S from './styles' // Manter S para outros styled components da FeedPage
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import * as S from './styles'
 
 import logo from '../../assets/images/logo-white.png'
 import CreatePostModal from '../../components/CreatePostModal/CreatePostModal'
 import LeftSidebar from '../../components/LeftSideBar/LeftSideBar'
-// REMOVIDO: import Post from '../../components/Post/Post';
 import MainFeed from '../../components/MainFeed/MainFeed'
 import RightSidebar from '../../components/RightSideBar/RightSideBar'
+import api from '../../services/api'
 
-// As interfaces PostType e UserToFollowType deveriam ser movidas para um arquivo de tipos compartilhado
-// para evitar duplicação. Por enquanto, as manteremos aqui até o passo de organização de tipos.
+import type { PostType, TrendType, UserToFollowType } from '../../types'
 
-interface PostType {
-  id: string
-  avatarUrl: string
-  username: string
-  handle: string
-  text: string
-  timestamp: string
-  comments: number
-  retweets: number
-  likes: number
-  views: string
-  imageUrl?: string
-}
-
-interface UserToFollowType {
-  id: string
-  avatarUrl: string
-  username: string
-  handle: string
-  isFollowing?: boolean
-}
-
-const initialTrends = [
+const initialTrends: TrendType[] = [
   { category: 'Esporte', hashtag: 'Diogo Jota', tweets: '1,38 mi posts' },
   {
     category: 'Assunto do Momento no Brasil',
@@ -49,126 +27,198 @@ const initialTrends = [
 ]
 
 export default function FeedPage() {
-  const [posts, setPosts] = useState<PostType[]>([
-    {
-      id: '1',
-      avatarUrl: 'https://via.placeholder.com/48/FF00FF/000000?text=S',
-      username: 'Sam',
-      handle: '@MoonWhisper',
-      text: 'Análise: Nakaba e sua arte de esconder verdades na nossa cara o tempo todo — a thread 🤍. #SevenDeadlySins #NanatsuNoTaizai',
-      timestamp: '18 h',
-      comments: 11,
-      retweets: 42,
-      likes: 512,
-      views: '23 mil',
-      imageUrl: 'https://via.placeholder.com/500x300?text=Imagem+do+Post'
-    },
-    {
-      id: '2',
-      avatarUrl: 'https://via.placeholder.com/48/00FFFF/000000?text=D',
-      username: 'DevMaster',
-      handle: '@CodingGuru',
-      text: 'Acabou de lançar um novo tutorial sobre React Hooks avançados! 🚀 Confiram o link na bio. #React #JavaScript #WebDev',
-      timestamp: '2 h',
-      comments: 5,
-      retweets: 15,
-      likes: 80,
-      views: '2.5 mil'
-    },
-    {
-      id: '3',
-      avatarUrl: 'https://via.placeholder.com/48/FF00FF/000000?text=S',
-      username: 'Sam',
-      handle: '@MoonWhisper',
-      text: 'Hoje é um ótimo dia para reler seus mangás favoritos! Qual o de vocês? #Manga #Anime',
-      timestamp: '5 min',
-      comments: 2,
-      retweets: 1,
-      likes: 10,
-      views: '100'
-    }
-  ])
-
-  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([
-    {
-      id: 'u1',
-      avatarUrl: 'https://via.placeholder.com/48/FF6347/000000?text=M',
-      username: 'Move!!',
-      handle: '@MoveDriga',
-      isFollowing: false
-    },
-    {
-      id: 'u2',
-      avatarUrl: 'https://via.placeholder.com/48/4682B4/000000?text=T',
-      username: 'TechNews',
-      handle: '@TechDaily',
-      isFollowing: false
-    },
-    {
-      id: 'u3',
-      avatarUrl: 'https://via.placeholder.com/48/9ACD32/000000?text=A',
-      username: 'ArtGallery',
-      handle: '@DailyArt',
-      isFollowing: false
-    }
-  ])
-
+  const navigate = useNavigate()
+  const [posts, setPosts] = useState<PostType[]>([])
+  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
+  const [feedType, setFeedType] = useState<'forYou' | 'following'>('forYou')
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true)
+  const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
 
-  const handlePostSubmit = (text: string, imageUrl?: string) => {
-    if (text.trim() || imageUrl) {
-      const newPost: PostType = {
-        id: Date.now().toString(),
-        avatarUrl: 'https://via.placeholder.com/48/008000/000000?text=YOU',
-        username: 'Seu Usuário',
-        handle: '@seuusuario',
-        text: text,
-        timestamp: 'Agora',
-        comments: 0,
-        retweets: 0,
-        likes: 0,
-        views: '0',
-        imageUrl: imageUrl
+  const loggedInUserString = localStorage.getItem('user_data')
+  const loggedInUser = loggedInUserString
+    ? JSON.parse(loggedInUserString)
+    : null
+  const loggedInUserAvatar =
+    loggedInUser?.avatar_url ||
+    'https://via.placeholder.com/48/008000/000000?text=YOU'
+  const loggedInUsername = loggedInUser?.username || 'Usuário'
+  const loggedInDisplayName =
+    loggedInUser?.display_name || 'Usuário Desconhecido'
+
+  // === Lógica de Busca de Posts (useEffect) ===
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoadingPosts(true)
+      try {
+        let response
+        const accessToken = localStorage.getItem('access_token')
+
+        if (feedType === 'forYou') {
+          response = await api.get<PostType[]>('posts/')
+        } else {
+          if (!accessToken) {
+            console.warn(
+              'Usuário não autenticado. Não é possível carregar feed "Seguindo".'
+            )
+            setPosts([])
+            setIsLoadingPosts(false)
+            return
+          }
+          response = await api.get<PostType[]>('posts/following/')
+        }
+        setPosts(response.data)
+      } catch (error) {
+        console.error('Erro ao buscar posts:', error)
+        setPosts([])
+      } finally {
+        setIsLoadingPosts(false)
       }
-      setPosts((prevPosts) => [newPost, ...prevPosts])
+    }
+
+    fetchPosts()
+  }, [feedType])
+
+  // === Lógica de Busca de Sugestões (useEffect) ===
+  useEffect(() => {
+    const fetchWhoToFollow = async () => {
+      setIsLoadingWhoToFollow(true)
+      try {
+        const accessToken = localStorage.getItem('access_token')
+        if (!accessToken) {
+          console.warn(
+            'Usuário não autenticado. Não é possível carregar sugestões.'
+          )
+          setWhoToFollow([])
+          setIsLoadingWhoToFollow(false)
+          return
+        }
+        const response = await api.get<UserToFollowType[]>('/who-to-follow/')
+        setWhoToFollow(response.data)
+      } catch (error) {
+        console.error('Erro ao buscar sugestões:', error)
+        setWhoToFollow([])
+      } finally {
+        setIsLoadingWhoToFollow(false)
+      }
+    }
+
+    fetchWhoToFollow()
+  }, [])
+
+  const handlePostSubmit = async (text: string, imageFile?: File) => {
+    try {
+      const formData = new FormData()
+      if (text.trim()) {
+        formData.append('text_content', text)
+      }
+      if (imageFile) {
+        formData.append('image', imageFile)
+      }
+
+      const response = await api.post<PostType>('posts/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      setPosts((prevPosts) => [response.data, ...prevPosts])
+    } catch (error) {
+      console.error('Erro ao criar postagem:', error)
     }
   }
 
-  const handleFollowUser = (userId: string) => {
-    setWhoToFollow((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user
+  const handleFollowUser = async (
+    userId: number | string,
+    isCurrentlyFollowing: boolean
+  ) => {
+    try {
+      if (isCurrentlyFollowing) {
+        await api.delete(`users/${userId}/follow/`)
+        console.log(`Deixou de seguir usuário ${userId}`)
+      } else {
+        await api.post(`users/${userId}/follow/`)
+        console.log(`Começou a seguir usuário ${userId}`)
+      }
+      const updatedWhoToFollowResponse =
+        await api.get<UserToFollowType[]>('who-to-follow/')
+      setWhoToFollow(updatedWhoToFollowResponse.data)
+
+      if (feedType === 'following') {
+        const postsResponse = await api.get<PostType[]>('posts/following/')
+        setPosts(postsResponse.data)
+      }
+    } catch (error) {
+      console.error('Erro ao seguir/deixar de seguir:', error)
+    }
+  }
+
+  const handleLikeToggle = async (
+    postId: string | number,
+    isCurrentlyLiked: boolean
+  ) => {
+    try {
+      await api.post(`posts/${postId}/like/`)
+      console.log(
+        `Post ${postId} ${isCurrentlyLiked ? 'descurtido' : 'curtido'}.`
       )
-    )
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              is_liked_by_viewer: !isCurrentlyLiked,
+              likes_count: isCurrentlyLiked
+                ? post.likes_count - 1
+                : post.likes_count + 1
+            }
+          }
+          return post
+        })
+      )
+    } catch (error) {
+      console.error('Erro ao curtir/descurtir post:', error)
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_data')
+    console.log('Usuário deslogado.')
+
+    navigate('/')
   }
 
   const isAnyModalOpen = showCreatePostModal
-
-  // Avatar do usuário logado (usado na sidebar e na MainContent)
-  const loggedInUserAvatar =
-    'https://via.placeholder.com/48/008000/000000?text=YOU'
 
   return (
     <S.PageContainer className={isAnyModalOpen ? 'blurred' : ''}>
       <LeftSidebar
         logoSrc={logo}
         userAvatarUrl={loggedInUserAvatar}
-        username="Fred."
-        userHandle="@FredMenge"
+        username={loggedInDisplayName}
+        userHandle={loggedInUsername}
         onPostButtonClick={() => setShowCreatePostModal(true)}
+        onLogout={handleLogout}
       />
 
-      {/* NOVO: Usando o componente MainFeed */}
       <MainFeed
         posts={posts}
         onOpenCreatePostModal={() => setShowCreatePostModal(true)}
         userAvatarUrl={loggedInUserAvatar}
+        isLoadingPosts={isLoadingPosts}
+        feedType={feedType}
+        setFeedType={setFeedType}
+        onLikeToggle={handleLikeToggle}
       />
 
       <RightSidebar
         trends={initialTrends}
         whoToFollow={whoToFollow}
         onFollowUser={handleFollowUser}
+        isLoadingWhoToFollow={isLoadingWhoToFollow}
       />
 
       <CreatePostModal

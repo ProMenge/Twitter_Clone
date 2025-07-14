@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react' // Importar useState
 import { BiHash } from 'react-icons/bi'
 import { FaXTwitter } from 'react-icons/fa6'
 import {
@@ -12,15 +12,17 @@ import {
 import { IoPeopleOutline } from 'react-icons/io5'
 import { MdOutlineVerified } from 'react-icons/md'
 import { RiFileList2Line } from 'react-icons/ri'
-import * as S from './styles' // Importa os estilos locais
+import * as S from './styles'
 
-// Definindo as props que este componente LeftSidebar irá receber
+import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
+
 interface LeftSidebarProps {
-  logoSrc: string // URL da logo
-  userAvatarUrl: string // URL do avatar do usuário logado
+  logoSrc: string
+  userAvatarUrl: string
   username: string
   userHandle: string
-  onPostButtonClick: () => void // Handler para abrir o modal de post
+  onPostButtonClick: () => void
+  onLogout: () => void // NOVO: Prop para lidar com o logout
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -28,8 +30,16 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
   userAvatarUrl,
   username,
   userHandle,
-  onPostButtonClick
+  onPostButtonClick,
+  onLogout // Desestruturar nova prop
 }) => {
+  const [showLogoutDropdown, setShowLogoutDropdown] = useState(false) // NOVO: Estado para controlar a visibilidade do dropdown
+
+  const handleToggleDropdown = (event: React.MouseEvent) => {
+    event.stopPropagation() // Impede que o clique se propague e feche o modal pai, se houver
+    setShowLogoutDropdown((prev) => !prev)
+  }
+
   return (
     <S.LeftSidebarContainer>
       <S.SidebarLogo src={logoSrc} alt="X Logo" />
@@ -126,15 +136,26 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <S.SidebarPostButton onClick={onPostButtonClick}>
         <span>Postar</span>
       </S.SidebarPostButton>
-      <S.UserInfoContainer>
+
+      {/* NOVO: UserInfoContainer agora tem onClick para o dropdown */}
+      <S.UserInfoContainer onClick={handleToggleDropdown}>
         <div
           className="avatar"
           style={{ backgroundImage: `url(${userAvatarUrl})` }}
         ></div>
         <div className="text-info">
           <span className="username">{username}</span>
-          <span className="handle">{userHandle}</span>
+          <span className="handle">@{userHandle}</span>
         </div>
+
+        {/* Renderiza o LogoutDropdown condicionalmente */}
+        {showLogoutDropdown && (
+          <LogoutDropdown
+            username={userHandle} // Ou username, dependendo de qual deseja exibir
+            onLogout={onLogout}
+            onClose={() => setShowLogoutDropdown(false)}
+          />
+        )}
       </S.UserInfoContainer>
     </S.LeftSidebarContainer>
   )
