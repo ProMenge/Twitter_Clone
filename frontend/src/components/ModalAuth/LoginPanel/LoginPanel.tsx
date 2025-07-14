@@ -7,13 +7,14 @@ import api from '../../../services/api'
 import type {
   ApiValidationError,
   AuthSuccessResponse,
-  LoginPayload,
-  ModalAuthFormValues
+  LoginPayload
 } from '../../../types'
 import * as S from '../styles'
 
+import { useAuth } from '../../../contexts/AuthContext'
+
 interface LoginPanelProps {
-  onClose: () => void // Para fechar o modal principal após o login
+  onClose: () => void
   setGeneralError: React.Dispatch<React.SetStateAction<string | null>>
 }
 
@@ -24,6 +25,7 @@ interface LoginFormValues {
 
 const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
   const navigate = useNavigate()
+  const { login } = useAuth() // NOVO: Obter a função login do contexto
 
   const loginSchema = Yup.object().shape({
     username_or_email: Yup.string().required(
@@ -31,6 +33,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
     ),
     password: Yup.string().required('Senha obrigatória')
   })
+
   const formik = useFormik<LoginFormValues>({
     initialValues: {
       username_or_email: '',
@@ -53,24 +56,30 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
         }
         const response = await api.post<AuthSuccessResponse>('login/', payload)
 
-        localStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('refresh_token', response.data.refresh_token || '')
-        localStorage.setItem('user_data', JSON.stringify(response.data.user))
+        login(
+          response.data.access_token,
+          response.data.refresh_token || '',
+          response.data.user
+        )
+
         console.log('Login bem-sucedido:', response.data)
 
-        onClose()
-        navigate('/feed')
+        onClose() // Fechar o modal
+        navigate('/feed') // Redirecionar
       } catch (error) {
         if (error instanceof AxiosError && error.response) {
           const responseData = error.response.data as ApiValidationError
-          const apiErrors: FormikErrors<ModalAuthFormValues> = {}
+          const apiErrors: FormikErrors<LoginFormValues> = {} // Tipagem para erros específicos do LoginForm
 
-          if (responseData.username) apiErrors.name = responseData.username[0]
-          if (responseData.email) apiErrors.contact = responseData.email[0]
-          if (responseData.password)
+          if (responseData.non_field_errors) {
+            apiErrors.username_or_email = responseData.non_field_errors[0]
+          }
+          if (responseData.username_or_email) {
+            apiErrors.username_or_email = responseData.username_or_email[0]
+          }
+          if (responseData.password) {
             apiErrors.password = responseData.password[0]
-          if (responseData.non_field_errors)
-            setGeneralError(responseData.non_field_errors[0])
+          }
 
           setFormikErrors(apiErrors)
 
@@ -78,7 +87,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
             !Object.keys(apiErrors).length &&
             !responseData.non_field_errors
           ) {
-            setGeneralError('Erro no registro. Tente novamente.')
+            setGeneralError('Erro no login. Tente novamente.')
           }
         } else {
           setGeneralError('Erro de conexão ou servidor. Tente mais tarde.')
@@ -119,7 +128,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
       >
         {formik.isSubmitting ? 'Entrando...' : 'Entrar'}
       </S.AdvanceButton>
-      <S.ForgotPassword href="#">Esqueceu sua senha?</S.ForgotPassword>{' '}
+      <S.ForgotPassword href="#">Esqueceu sua senha?</S.ForgotPassword>
     </form>
   )
 }

@@ -14,6 +14,8 @@ import type {
 // Importar os tipos globais
 import * as S from '../styles' // Importar os Styled Components do ModalAuth pai
 
+import { useAuth } from '../../../contexts/AuthContext' // ADICIONADO: Importar useAuth
+
 interface RegisterPanelProps {
   onClose: () => void // Para fechar o modal principal após o registro
   setGeneralError: React.Dispatch<React.SetStateAction<string | null>> // Para exibir erros gerais no modal pai
@@ -26,6 +28,9 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
   setGeneralError
 }) => {
   const navigate = useNavigate()
+  // ADICIONADO: Obter a função login do contexto
+  const { login } = useAuth()
+
   // MOVIDOS: Estados 'step' e 'useEmailForContact' para cá
   const [step, setStep] = useState(1)
   const [useEmailForContact, setUseEmailForContact] = useState(false)
@@ -93,6 +98,7 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
         // Campos que não são usados neste formulário mas estão em ModalAuthFormValues
         username_or_email: Yup.string().notRequired(),
         _type_context: Yup.mixed<'login' | 'register'>()
+          .oneOf(['login', 'register'])
           .nullable()
           .notRequired(),
         _step_context: Yup.number().notRequired(),
@@ -127,6 +133,8 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
       setGeneralError(null)
       setSubmitting(true)
 
+      // Seção de código que NÃO DEVO TER ALTERADO (do seu código base)
+      // Validação interna do passo 1 e chamada API no passo 2
       if (step === 1) {
         const errors = await formik.validateForm(values)
 
@@ -190,13 +198,18 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
             payload
           )
 
-          localStorage.setItem('access_token', response.data.access_token)
-          localStorage.setItem('user_data', JSON.stringify(response.data.user))
+          // APENAS ESTA LINHA ALTERADA: Usar a função login do contexto
+          login(
+            response.data.access_token,
+            response.data.refresh_token || '',
+            response.data.user
+          )
 
           console.log('Registro bem-sucedido:', response.data)
           onClose()
           navigate('/feed')
         } catch (error) {
+          // SEÇÃO CATCH: NÃO ALTERADO (seu código original)
           if (error instanceof AxiosError && error.response) {
             const responseData = error.response.data as ApiValidationError
             const apiErrors: FormikErrors<ModalAuthFormValues> = {}
@@ -227,6 +240,8 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
     }
   })
 
+  // Efeito colateral: Atualizar os campos de contexto do Formik quando os states mudam
+  // Estes campos são usados pelo schema Yup.lazy
   useEffect(() => {
     formik.setFieldValue('_step_context', step)
     formik.setFieldValue('_useEmailForContact_context', useEmailForContact)
