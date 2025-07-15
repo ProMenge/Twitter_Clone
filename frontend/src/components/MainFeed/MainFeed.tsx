@@ -10,7 +10,6 @@ interface MainFeedProps {
   isLoadingPosts: boolean
   feedType: 'forYou' | 'following'
   setFeedType: (type: 'forYou' | 'following') => void
-  // NOVO: Adicionar onLikeToggle nas props
   onLikeToggle: (postId: string | number, isCurrentlyLiked: boolean) => void
 }
 
@@ -21,7 +20,7 @@ const MainFeed: React.FC<MainFeedProps> = ({
   isLoadingPosts,
   feedType,
   setFeedType,
-  onLikeToggle // Desestruturar a nova prop
+  onLikeToggle
 }) => {
   return (
     <S.MainContentContainer>
@@ -51,11 +50,7 @@ const MainFeed: React.FC<MainFeedProps> = ({
         <S.LoadingIndicator>Carregando posts...</S.LoadingIndicator>
       ) : (
         posts.map((post) => (
-          <Post
-            key={post.id}
-            post={post}
-            onLikeToggle={onLikeToggle} // <-- AGORA PASSAMOS A PROP PARA O COMPONENTE POST
-          />
+          <Post key={post.id} post={post} onLikeToggle={onLikeToggle} />
         ))
       )}
       {!isLoadingPosts && posts.length === 0 && (

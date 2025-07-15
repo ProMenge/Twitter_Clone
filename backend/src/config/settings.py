@@ -73,11 +73,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "twitter_clone_db",          # <-- O nome do DB que você criou no pgAdmin
-        "USER": "twitter_clone_user",       # <-- O nome do usuário que você criou no pgAdmin
-        "PASSWORD": "Teste123!", # <-- A senha que você definiu para 'twitter_clone_user'
+        "NAME": "twitter_clone_db",          
+        "USER": "twitter_clone_user",       
+        "PASSWORD": "Teste123!", 
         "HOST": "localhost",
         "PORT": "5432",
+        "OPTIONS": {
+            "client_encoding": "UTF8",
+        }
     }
 }
 
@@ -114,9 +117,6 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
-    # Opcional: para maior segurança com refresh tokens
-    # 'ROTATE_REFRESH_TOKENS': True,
-    # 'BLACKLIST_AFTER_ROTATION': True,
 }
 
 # --- Configurações CORS (Necessário para Frontend React) ---

@@ -25,7 +25,7 @@ interface LoginFormValues {
 
 const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
   const navigate = useNavigate()
-  const { login } = useAuth() // NOVO: Obter a função login do contexto
+  const { login } = useAuth()
 
   const loginSchema = Yup.object().shape({
     username_or_email: Yup.string().required(
@@ -64,13 +64,12 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
 
         console.log('Login bem-sucedido:', response.data)
 
-        onClose() // Fechar o modal
-        navigate('/feed') // Redirecionar
+        onClose()
+        navigate('/feed')
       } catch (error) {
         if (error instanceof AxiosError && error.response) {
           const responseData = error.response.data as ApiValidationError
-          const apiErrors: FormikErrors<LoginFormValues> = {} // Tipagem para erros específicos do LoginForm
-
+          const apiErrors: FormikErrors<LoginFormValues> = {}
           if (responseData.non_field_errors) {
             apiErrors.username_or_email = responseData.non_field_errors[0]
           }

@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 import React, {
   createContext,
   type ReactNode,
@@ -8,7 +7,7 @@ import React, {
   useState
 } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../services/api' // Importar a instância do Axios configurada
+import api from '../services/api'
 
 import type { AuthSuccessResponse } from '../types'
 
@@ -28,33 +27,29 @@ interface CurrentUser {
 }
 
 interface AuthContextType {
-  user: CurrentUser | null // Dados do usuário logado
-  isAuthenticated: boolean // True se houver um usuário logado
-  isLoadingAuth: boolean // True durante a verificação inicial de autenticação
+  user: CurrentUser | null
+  isAuthenticated: boolean
+  isLoadingAuth: boolean
   login: (
     accessToken: string,
     refreshToken: string,
     userData: CurrentUser
-  ) => void // Função para login
-  logout: () => void // Função para logout
-  // Opcional: função para refresh do token se quiser gerenciá-la aqui
+  ) => void
+  logout: () => void
 }
 
-// Criar o Contexto de Autenticação
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Criar o Provedor de Autenticação
 interface AuthProviderProps {
-  children: ReactNode // Componentes filhos que terão acesso ao contexto
+  children: ReactNode
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
-  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true) // Começa true para verificar localStorage
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true)
   const navigate = useNavigate()
 
-  // Função para efetuar o login (chamada pelo ModalAuth)
   const login = useCallback(
     (accessToken: string, refreshToken: string, userData: CurrentUser) => {
       localStorage.setItem('access_token', accessToken)
@@ -62,12 +57,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('user_data', JSON.stringify(userData))
       setUser(userData)
       setIsAuthenticated(true)
-      // Não navega aqui, quem chama o login decidirá a navegação
     },
     []
   )
 
-  // Função para efetuar o logout (chamada por componentes como LeftSidebar)
   const logout = useCallback(() => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
@@ -93,10 +86,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsAuthenticated(true)
         } catch (e) {
           console.error('Erro ao parsear dados do usuário do localStorage:', e)
-          logout() // Desloga se os dados estiverem corrompidos
+          logout()
         }
       }
-      setIsLoadingAuth(false) // Finaliza o carregamento inicial
+      setIsLoadingAuth(false)
     }
 
     initializeAuth()
@@ -138,8 +131,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 'Falha ao renovar token. Redirecionando para login:',
                 refreshError
               )
-              logout() // Força o logout
-              return Promise.reject(refreshError) // Rejeita o erro
+              logout()
+              return Promise.reject(refreshError)
             }
           } else {
             console.warn(
@@ -152,12 +145,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return Promise.reject(error)
       }
     )
-
-    // Função de limpeza para remover o interceptor quando o componente é desmontado
     return () => {
       api.interceptors.response.eject(interceptor)
     }
-  }, [logout]) // Depende da função logout
+  }, [logout])
 
   const contextValue = {
     user,
@@ -172,7 +163,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   )
 }
 
-// Hook customizado para consumir o Contexto de Autenticação
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {

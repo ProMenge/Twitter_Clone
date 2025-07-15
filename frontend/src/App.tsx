@@ -6,11 +6,9 @@ function App() {
   return (
     <>
       <GlobalCss />
-      {/* CORREÇÃO AQUI: BrowserRouter agora envolve AuthProvider */}
       <BrowserRouter>
         <AuthProvider>
           {' '}
-          {/* AuthProvider agora está dentro do BrowserRouter */}
           <Rotas />
         </AuthProvider>
       </BrowserRouter>

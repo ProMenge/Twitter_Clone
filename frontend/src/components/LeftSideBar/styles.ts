@@ -1,14 +1,14 @@
 import styled from 'styled-components'
 import { colors } from '../../styles'
 import Button from '../Button/Button'
-// Copiado de FeedPage/styles.ts
+
 export const StyledIconPlaceholder = styled.div`
   width: 26px;
   height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 24px; /* Tamanho padrão do ícone */
   color: ${colors.white};
 
   svg {
@@ -18,7 +18,6 @@ export const StyledIconPlaceholder = styled.div`
   }
 `
 
-// Copiado de FeedPage/styles.ts
 export const LeftSidebarContainer = styled.aside`
   width: 275px;
   padding: 10px 20px;
@@ -31,7 +30,6 @@ export const LeftSidebarContainer = styled.aside`
   height: 100vh;
   overflow-y: auto;
 
-  /* --- Estilo da barra de rolagem para WebKit (Chrome, Safari, Edge) --- */
   &::-webkit-scrollbar {
     width: 8px;
     background: transparent;
@@ -45,16 +43,15 @@ export const LeftSidebarContainer = styled.aside`
   &::-webkit-scrollbar-thumb:hover {
     background: #383b3f;
   }
-  /* --- Estilo da barra de rolagem para Firefox --- */
+
   scrollbar-width: thin;
   scrollbar-color: #2f3336 transparent;
 
-  /* Oculta a sidebar em telas menores */
   @media (max-width: 1024px) {
     width: 80px;
     align-items: center;
     span {
-      display: none;
+      display: none; /* Esconde o texto dos itens de navegação (exceto no botão Postar) */
     }
   }
 
@@ -63,24 +60,21 @@ export const LeftSidebarContainer = styled.aside`
   }
 `
 
-// Copiado de FeedPage/styles.ts
 export const SidebarLogo = styled.img`
   width: 30px;
   margin-bottom: 20px;
+  margin-left: 12px;
   align-self: flex-start;
 `
 
-// Copiado de FeedPage/styles.ts
 export const NavList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
   width: fit-content;
   align-self: flex-start;
-  margin-top: 10px;
 `
 
-// Copiado de FeedPage/styles.ts
 export const NavItem = styled.li`
   margin-bottom: 10px;
 
@@ -107,30 +101,80 @@ export const NavItem = styled.li`
   }
 `
 
-// Copiado de FeedPage/styles.ts e renomeado para evitar conflito com Button global
-export const SidebarPostButton = styled(Button)`
+export const SidebarPostButton = styled(Button).attrs({})`
   margin-top: 20px;
-  background-color: ${colors.white};
-  color: black;
-  border: none;
-  border-radius: 9999px;
   padding: 15px 40px;
   font-size: 17px;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 20px;
-  transition: opacity 0.2s ease-in-out;
+  transition:
+    opacity 0.2s ease-in-out,
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    /* Adicionado para transição da cor do texto */ width 0.2s ease-in-out,
+    height 0.2s ease-in-out,
+    padding 0.2s ease-in-out,
+    font-size 0.2s ease-in-out;
   align-self: flex-start;
-  width: 100%;
+  width: 90%;
+  max-width: 220px;
   margin-bottom: 16px;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  /* NOVO: Fundo branco, fonte preta */
+  background-color: ${colors.white};
+  color: ${colors.black}; /* Cor da fonte preta */
+
+  /* Estilos para o ícone de pena e o texto dentro do botão */
+  ${StyledIconPlaceholder}.post-icon {
+    display: none;
+  }
+  span.post-text {
+    display: block;
+    color: ${colors.black}; /* NOVO: Garante cor do texto preta */
+  }
+
   &:hover {
-    opacity: 0.9;
-    background-color: #1d9bf0;
+    opacity: 1; /* Removido opacity: 0.9 para hover. O X geralmente mantém opacidade 1 */
+    background-color: #1d9bf0; /* NOVO: Fundo azul no hover */
+    color: ${colors.white}; /* NOVO: Texto branco no hover */
+  }
+
+  /* MEDIA QUERY para telas <= 1024px */
+  @media (max-width: 1024px) {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    padding: 0;
+    font-size: 0;
+
+    span.post-text {
+      display: none;
+    }
+    ${StyledIconPlaceholder}.post-icon {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      svg {
+        width: 28px;
+        height: 28px;
+        color: ${colors.black}; /* NOVO: Ícone preto em background branco no mobile */
+      }
+    }
+
+    &:hover {
+      background-color: #1d9bf0; /* Fundo azul no hover do mobile também */
+      ${StyledIconPlaceholder}.post-icon svg {
+        color: ${colors.white}; /* Ícone branco no hover do mobile */
+      }
+    }
   }
 `
 
-// Copiado de FeedPage/styles.ts
 export const UserInfoContainer = styled.div`
   margin-top: auto;
   margin-bottom: 20px;
@@ -143,10 +187,11 @@ export const UserInfoContainer = styled.div`
   transition: background-color 0.2s ease-in-out;
   width: fit-content;
   align-self: flex-start;
-  position: relative; /* ADICIONADO: Essencial para posicionar o LogoutDropdown */
+  position: relative;
 
   &:hover {
     background-color: #1a1a1a;
+    border-radius: 9999px;
   }
 
   .avatar {
@@ -175,5 +220,15 @@ export const UserInfoContainer = styled.div`
   .handle {
     color: ${colors.lightGray};
     font-size: 14px;
+  }
+`
+
+export const UserOptionsIcon = styled.div`
+  margin-left: 20px;
+  color: ${colors.lightGray};
+  font-size: 18px;
+
+  @media (max-width: 1024px) {
+    display: none;
   }
 `

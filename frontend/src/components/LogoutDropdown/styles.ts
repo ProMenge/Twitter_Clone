@@ -1,4 +1,3 @@
-// src/components/LeftSidebar/LogoutDropdown/styles.ts
 import styled from 'styled-components'
 import { colors } from '../../styles'
 
@@ -11,7 +10,7 @@ export const DropdownContainer = styled.div`
   box-shadow:
     rgba(255, 255, 255, 0.2) 0px 0px 15px,
     rgba(255, 255, 255, 0.15) 0px 0px 3px 1px;
-  width: 300px;
+  width: 220px;
   overflow: hidden;
   z-index: 100;
   padding: 10px 0;
@@ -25,7 +24,7 @@ export const DropdownContainer = styled.div`
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid ${colors.black}; /* Cor da seta */
+    border-top: 8px solid ${colors.black};
   }
 
   @media (max-width: 1024px) {
@@ -49,14 +48,14 @@ export const DropdownItem = styled.div`
   transition: background-color 0.1s ease-in-out;
 
   &:hover {
-    background-color: #1a1a1a; /* Fundo cinza escuro no hover */
+    background-color: #1a1a1a;
   }
 
   &.bold {
-    font-weight: 700; /* Para "Adicionar uma conta existente" */
+    font-weight: 700;
   }
 
   &.text-danger {
-    color: #f4212e; /* Cor para "Sair" */
+    color: #f4212e;
   }
 `

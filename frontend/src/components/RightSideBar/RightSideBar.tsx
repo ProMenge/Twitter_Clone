@@ -6,16 +6,16 @@ import type { TrendType, UserToFollowType } from '../../types'
 
 interface RightSidebarProps {
   trends: TrendType[]
-  whoToFollow: UserToFollowType[] // Recebe o array de UserToFollowType
+  whoToFollow: UserToFollowType[]
   onFollowUser: (userId: number | string, isCurrentlyFollowing: boolean) => void
-  isLoadingWhoToFollow: boolean // NOVO: Estado de carregamento
+  isLoadingWhoToFollow: boolean
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({
   trends,
   whoToFollow,
   onFollowUser,
-  isLoadingWhoToFollow // Desestruturar nova prop
+  isLoadingWhoToFollow
 }) => {
   return (
     <S.RightSidebarContainer>
@@ -23,8 +23,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         <FiSearch />
         <input type="text" placeholder="Buscar" />
       </S.SearchBar>
-
-      {/* Assine o Premium Section */}
       <S.SectionBox>
         <S.SectionTitle>Assine o Premium</S.SectionTitle>
         <p>
@@ -34,7 +32,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         <S.PremiumButton>Assinar</S.PremiumButton>
       </S.SectionBox>
 
-      {/* O que está acontecendo Section (Trends) */}
       <S.SectionBox>
         <S.SectionTitle>O que está acontecendo</S.SectionTitle>
         {trends.map((trend, index) => (
@@ -46,17 +43,16 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         ))}
       </S.SectionBox>
 
-      {/* Quem seguir Section */}
       <S.SectionBox>
         <S.SectionTitle>Quem seguir</S.SectionTitle>
-        {isLoadingWhoToFollow ? ( // Exibir carregando ou sugestões
-          <S.LoadingIndicator>Carregando sugestões...</S.LoadingIndicator> // Adicione este estilo em styles.ts
+        {isLoadingWhoToFollow ? (
+          <S.LoadingIndicator>Carregando sugestões...</S.LoadingIndicator>
         ) : (
           <>
             {whoToFollow.length === 0 ? (
               <S.NoSuggestionsMessage>
                 Nenhuma sugestão para exibir.
-              </S.NoSuggestionsMessage> // Adicione este estilo em styles.ts
+              </S.NoSuggestionsMessage>
             ) : (
               whoToFollow.map((user) => (
                 <S.WhoToFollowItem key={user.id}>
@@ -64,21 +60,19 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     <div
                       className="avatar"
                       style={{
-                        backgroundImage: `url(${user.avatar_url})`, // Usar user.avatar_url
+                        backgroundImage: `url(${user.avatar_url})`,
                         backgroundSize: 'cover'
                       }}
                     ></div>
                     <div className="text-details">
-                      <span className="username">{user.display_name}</span>{' '}
-                      {/* Usar display_name */}
-                      <span className="handle">@{user.username}</span>{' '}
-                      {/* Usar username */}
+                      <span className="username">{user.display_name}</span>
+                      <span className="handle">@{user.username}</span>
                     </div>
                   </div>
                   <S.FollowButton
                     onClick={() =>
                       onFollowUser(user.id, !!user.is_followed_by_viewer)
-                    } // Passar id e is_followed_by_viewer
+                    }
                   >
                     {user.is_followed_by_viewer ? 'Seguindo' : 'Seguir'}
                   </S.FollowButton>
@@ -89,7 +83,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         )}
       </S.SectionBox>
 
-      {/* Footer da Sidebar Direita */}
       <S.SidebarFooter>
         <a href="#">Termos de Serviço</a>
         <a href="#">Política de Privacidade</a>

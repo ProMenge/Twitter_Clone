@@ -24,9 +24,9 @@ export default function Home() {
 
             <S.ButtonContainer>
               <Button
-                variant="primary" // Azul
-                size="medium" // Padding padrão
-                fullWidth // Ocupa 100% da largura
+                variant="primary"
+                size="medium"
+                fullWidth
                 onClick={() => setShowRegister(true)}
               >
                 Criar conta
@@ -40,12 +40,10 @@ export default function Home() {
               </S.Terms>
 
               <S.LoginText>Já tem uma conta?</S.LoginText>
-
-              {/* SUBSTITUÍDO: S.LoginButton por Button */}
               <Button
-                variant="secondary" // Transparente com borda
-                size="medium" // Padding padrão
-                fullWidth // Ocupa 100% da largura
+                variant="secondary"
+                size="medium"
+                fullWidth
                 onClick={() => setShowLogin(true)}
               >
                 Entrar

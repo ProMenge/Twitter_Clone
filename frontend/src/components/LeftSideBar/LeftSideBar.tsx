@@ -1,22 +1,22 @@
 import React, { useState } from 'react'
-import { BiHash } from 'react-icons/bi'
-import { FaXTwitter } from 'react-icons/fa6'
+import * as S from './styles'
 import {
-  FiBell,
   FiHome,
-  FiMail,
-  FiMoreHorizontal,
   FiSearch,
-  FiUser
+  FiBell,
+  FiMail,
+  FiUser,
+  FiMoreHorizontal
 } from 'react-icons/fi'
+import { FaXTwitter } from 'react-icons/fa6'
+import { BiHash } from 'react-icons/bi'
+import { RiFileList2Line } from 'react-icons/ri'
 import { IoPeopleOutline } from 'react-icons/io5'
 import { MdOutlineVerified } from 'react-icons/md'
-import { RiFileList2Line } from 'react-icons/ri'
-import icon from '../../assets/images/default-avatar-icon-of-social-media-user-vector.jpg'
-import * as S from './styles'
+import { FaFeatherAlt } from 'react-icons/fa'
 
-import { useAuth } from '../../contexts/AuthContext' // NOVO: Importar useAuth
 import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface LeftSidebarProps {
   logoSrc: string
@@ -26,18 +26,17 @@ interface LeftSidebarProps {
 const LeftSidebar: React.FC<LeftSidebarProps> = ({
   logoSrc,
   onPostButtonClick
-  // REMOVIDO: userAvatarUrl, username, userHandle, onLogout
 }) => {
   const [showLogoutDropdown, setShowLogoutDropdown] = useState(false)
-  const { user, logout } = useAuth() // NOVO: Obter user e logout do AuthContext
+  const { user, logout } = useAuth()
 
   const handleToggleDropdown = (event: React.MouseEvent) => {
     event.stopPropagation()
     setShowLogoutDropdown((prev) => !prev)
   }
 
-  // Usar dados do 'user' do contexto, com fallbacks para caso não esteja carregado ou logado
-  const currentUserAvatar = user?.avatar_url || { icon }
+  const currentUserAvatar =
+    user?.avatar_url || 'https://via.placeholder.com/40/CCCCCC/000000?text=U'
   const currentUsername = user?.username || '@usuario'
   const currentUserDisplayName = user?.display_name || 'Usuário'
 
@@ -134,8 +133,13 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
           </a>
         </S.NavItem>
       </S.NavList>
+
+      {/* Botão "Postar" - Agora com ícone e texto controlados por CSS */}
       <S.SidebarPostButton onClick={onPostButtonClick}>
-        <span>Postar</span>
+        <S.StyledIconPlaceholder className="post-icon">
+          <FaFeatherAlt />
+        </S.StyledIconPlaceholder>
+        <span className="post-text">Postar</span>
       </S.SidebarPostButton>
 
       <S.UserInfoContainer onClick={handleToggleDropdown}>
@@ -152,8 +156,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
         {showLogoutDropdown && (
           <LogoutDropdown
-            username={currentUsername} // Passar o username do contexto
-            onLogout={logout} // Passar a função logout do contexto
+            username={currentUsername}
+            onLogout={logout}
             onClose={() => setShowLogoutDropdown(false)}
           />
         )}

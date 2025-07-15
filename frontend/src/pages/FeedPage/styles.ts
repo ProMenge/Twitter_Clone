@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 import { colors } from '../../styles'
-// Novo Styled Component para o placeholder do ícone
 
 export const PageContainer = styled.div`
   display: flex;
@@ -13,14 +12,14 @@ export const PageContainer = styled.div`
 `
 
 export const LoadingIndicator = styled.div`
-  padding: 40px; /* Mais padding para um indicador global */
+  padding: 40px;
   text-align: center;
   color: ${colors.lightGray};
-  font-size: 20px; /* Tamanho maior para um indicador global */
+  font-size: 20px;
   font-weight: 700;
-  width: 100%; /* Ocupa a largura total para centralizar */
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Ocupa a altura total da tela */
+  min-height: 100vh;
 `

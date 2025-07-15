@@ -47,22 +47,21 @@ export interface AuthSuccessResponse {
 }
 
 export interface PostType {
-  id: string | number // Pode ser string (UUID) ou number (BigAutoField)
+  id: string | number
   user: {
     id: number | string
     username: string
     display_name: string
     avatar_url: string
-    // Adicione outros campos do UserSerializer que são serializados dentro do Post
   }
   text_content: string
-  image?: string // URL da imagem, opcional
+  image?: string
   likes_count: number
-  reposts_count: number // Para retweets
-  comments_count: number // Para comentários
-  views_count?: string | number // Pode ser string ("23 mil") ou number
-  created_at: string // Formato ISO 8601
-  updated_at: string // Formato ISO 8601
+  reposts_count: number
+  comments_count: number
+  views_count?: string | number
+  created_at: string
+  updated_at: string
   is_liked_by_viewer?: boolean
   is_reposted_by_viewer?: boolean
 }
@@ -72,8 +71,7 @@ export interface UserToFollowType {
   avatar_url: string
   username: string
   display_name: string
-  is_followed_by_viewer?: boolean // Para exibir o botão "Seguir/Seguindo"
-  // Outros campos para sugestões de usuário
+  is_followed_by_viewer?: boolean
 }
 
 export interface TrendType {

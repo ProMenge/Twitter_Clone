@@ -1,7 +1,6 @@
 import { Container, Nav, NavList, NavItem, CopyrightText } from './styles'
 
 const Footer = () => {
-  // Dados dos links para facilitar a manutenção
   const topLinks = [
     { text: 'Sobre', href: 'https://about.twitter.com/pt/who-we-are' },
     {
@@ -69,7 +68,7 @@ const Footer = () => {
               {index < bottomLinks.length - 1 && <span>|</span>}
             </NavItem>
           ))}
-          {/* Adiciona o copyright na mesma linha dos links de baixo, como na imagem */}
+
           <CopyrightText>&copy; {currentYear} X Corp.</CopyrightText>
         </NavList>
       </Nav>

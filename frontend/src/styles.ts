@@ -72,7 +72,7 @@ export const GlobalCss = createGlobalStyle`
     margin: 0;
     padding:0;
     box-sizing: border-box;
-    font-family: 'Chirp', sans-serif; /* AQUI! Aplicando a Chirp como fonte principal */
+    font-family: 'Chirp', sans-serif;
     list-style: none;
   }
   body {

@@ -8,19 +8,16 @@ import * as S from './styles'
 
 import { useAuth } from '../../contexts/AuthContext' // NOVO: Importar useAuth
 
-// Ajustar a interface: userAvatarUrl não é mais uma prop
 interface CreatePostModalProps {
   isOpen: boolean
   onClose: () => void
-  onPostSubmit: (text: string, imageFile?: File) => Promise<void> // Retorna Promise<void> para indicar assincronicidade
-  // REMOVIDA: userAvatarUrl
+  onPostSubmit: (text: string, imageFile?: File) => Promise<void>
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({
   isOpen,
   onClose,
   onPostSubmit
-  // REMOVIDO: userAvatarUrl da desestruturação
 }) => {
   const [postText, setPostText] = useState('')
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -28,8 +25,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { user } = useAuth() // NOVO: Obter o user do AuthContext
-  // Usar o avatar do usuário do contexto, com um fallback
+  const { user } = useAuth()
   const currentUserAvatar = user?.avatar_url || { icon }
 
   if (!isOpen) return null
@@ -89,8 +85,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
           <S.UserInfoSection>
             <S.Avatar
               style={{ backgroundImage: `url(${currentUserAvatar})` }}
-            />{' '}
-            {/* USANDO currentUserAvatar */}
+            />
             <S.AudienceSelector>
               Qualquer pessoa <RiEarthLine />
             </S.AudienceSelector>
