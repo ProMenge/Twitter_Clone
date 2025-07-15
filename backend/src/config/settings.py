@@ -7,18 +7,23 @@ import sys
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url # NOVO: Importar para configurar DB
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(BASE_DIR / "src"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-qei53(e_9il$22upzbc(26g^5vdvx3#j+i_dt#4b8pb7n$8e$^"
+# NOVO: Ler SECRET_KEY de variável de ambiente
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-qei53(e_9il$22upzbc(26g^5vdvx3#j+i_dt#4b8pb7n$8e$^')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# NOVO: DEBUG = False em produção, True em desenvolvimento
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+# NOVO: ALLOWED_HOSTS em produção
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
@@ -35,10 +40,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'whitenoise.runserver_nostatic', # Requerido se DEBUG=True
+    'whitenoise', # Adicionar ao final para Whitenoise
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware", 
     "django.middleware.common.CommonMiddleware",
@@ -52,7 +60,6 @@ ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        # CORREÇÃO AQUI: "django.template.backends.django.DjangoTemplates"
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "APP_DIRS": True,
@@ -70,18 +77,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
+# NOVO: Configuração para PostgreSQL em produção via DATABASE_URL
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "twitter_clone_db",          
-        "USER": "twitter_clone_user",       
-        "PASSWORD": "Teste123!", 
-        "HOST": "localhost",
-        "PORT": "5432",
-        "OPTIONS": {
-            "client_encoding": "UTF8",
-        }
-    }
+    "default": dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'), # Fallback para SQLite em desenvolvimento local
+        conn_max_age=600 # Opcional: para pool de conexões
+    )
 }
 
 
@@ -102,8 +103,16 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = "static/"
 
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Render ou collectstatic irá coletar aqui
+STATICFILES_DIRS = [] # Opcional: para pastas estáticas que não estão em apps
+
+# NOVO: Armazenamento de arquivos estáticos para Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = 'users.User'
@@ -115,26 +124,31 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7), # OK para dev
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # --- Configurações CORS (Necessário para Frontend React) ---
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:5173"# ADICIONE A URL DO SEU FRONTEND
+    "http://localhost:5173",
+    # Exemplo de URL de produção (Render atribuirá)
+    # "https://seu-frontend-vercel.vercel.app",
+    # "https://seu-backend.onrender.com", # Se o frontend for servido do mesmo domínio
 ]
-# Ou, para desenvolvimento, permitir tudo (menos seguro para produção):
-# CORS_ALLOW_ALL_ORIGINS = True
 
-# Opcional: Se precisar de headers ou métodos específicos além dos padrões
-# CORS_ALLOW_HEADERS = (
-#     "accept", "authorization", "content-type", "user-agent", "x-csrftoken", "x-requested-with",
-# )
-# CORS_ALLOW_METHODS = (
-#     "DELETE", "GET", "POST", "PUT",
-# )
+# NOVO: Configurações para produção (segurança)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    # "https://seu-frontend-vercel.vercel.app",
+    # "https://seu-backend.onrender.com",
+]
 
 # Para servir arquivos de mídia (avatar_url, image_url de posts)
+# Importante: Em produção, o MEDIA_ROOT não deve ser servido diretamente pelo Django
+# Você deve usar um serviço de armazenamento de objetos (como AWS S3, Google Cloud Storage)
+# Para um MVP no Render, pode haver um volume persistente, mas não é a prática mais escalável.
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
