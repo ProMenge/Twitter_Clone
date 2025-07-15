@@ -1,44 +1,44 @@
-import React, { useState } from 'react' // Importar useState
-import { BiHash } from 'react-icons/bi'
-import { FaXTwitter } from 'react-icons/fa6'
+import React, { useState } from 'react'
+import * as S from './styles'
 import {
-  FiBell,
   FiHome,
-  FiMail,
-  FiMoreHorizontal,
   FiSearch,
-  FiUser
+  FiBell,
+  FiMail,
+  FiUser,
+  FiMoreHorizontal
 } from 'react-icons/fi'
+import { FaXTwitter } from 'react-icons/fa6'
+import { BiHash } from 'react-icons/bi'
+import { RiFileList2Line } from 'react-icons/ri'
 import { IoPeopleOutline } from 'react-icons/io5'
 import { MdOutlineVerified } from 'react-icons/md'
-import { RiFileList2Line } from 'react-icons/ri'
-import * as S from './styles'
+import { FaFeatherAlt } from 'react-icons/fa'
 
 import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface LeftSidebarProps {
   logoSrc: string
-  userAvatarUrl: string
-  username: string
-  userHandle: string
   onPostButtonClick: () => void
-  onLogout: () => void // NOVO: Prop para lidar com o logout
 }
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({
   logoSrc,
-  userAvatarUrl,
-  username,
-  userHandle,
-  onPostButtonClick,
-  onLogout // Desestruturar nova prop
+  onPostButtonClick
 }) => {
-  const [showLogoutDropdown, setShowLogoutDropdown] = useState(false) // NOVO: Estado para controlar a visibilidade do dropdown
+  const [showLogoutDropdown, setShowLogoutDropdown] = useState(false)
+  const { user, logout } = useAuth()
 
   const handleToggleDropdown = (event: React.MouseEvent) => {
-    event.stopPropagation() // Impede que o clique se propague e feche o modal pai, se houver
+    event.stopPropagation()
     setShowLogoutDropdown((prev) => !prev)
   }
+
+  const currentUserAvatar =
+    user?.avatar_url || 'https://via.placeholder.com/40/CCCCCC/000000?text=U'
+  const currentUsername = user?.username || '@usuario'
+  const currentUserDisplayName = user?.display_name || 'Usuário'
 
   return (
     <S.LeftSidebarContainer>
@@ -133,26 +133,31 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
           </a>
         </S.NavItem>
       </S.NavList>
+
+      {/* Botão "Postar" - Agora com ícone e texto controlados por CSS */}
       <S.SidebarPostButton onClick={onPostButtonClick}>
-        <span>Postar</span>
+        <S.StyledIconPlaceholder className="post-icon">
+          <FaFeatherAlt />
+        </S.StyledIconPlaceholder>
+        <span className="post-text">Postar</span>
       </S.SidebarPostButton>
 
-      {/* NOVO: UserInfoContainer agora tem onClick para o dropdown */}
       <S.UserInfoContainer onClick={handleToggleDropdown}>
         <div
           className="avatar"
-          style={{ backgroundImage: `url(${userAvatarUrl})` }}
+          style={{ backgroundImage: `url(${currentUserAvatar})` }}
         ></div>
         <div className="text-info">
-          <span className="username">{username}</span>
-          <span className="handle">@{userHandle}</span>
+          <span className="username">{currentUserDisplayName}</span>
+          <span className="handle">@{currentUsername}</span>
         </div>
 
-        {/* Renderiza o LogoutDropdown condicionalmente */}
+        <FiMoreHorizontal />
+
         {showLogoutDropdown && (
           <LogoutDropdown
-            username={userHandle} // Ou username, dependendo de qual deseja exibir
-            onLogout={onLogout}
+            username={currentUsername}
+            onLogout={logout}
             onClose={() => setShowLogoutDropdown(false)}
           />
         )}

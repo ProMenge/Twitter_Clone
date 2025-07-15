@@ -1,12 +1,16 @@
-import { GlobalCss } from './styles'
 import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
 import Rotas from './routes'
+import { GlobalCss } from './styles'
 function App() {
   return (
     <>
       <GlobalCss />
       <BrowserRouter>
-        <Rotas />
+        <AuthProvider>
+          {' '}
+          <Rotas />
+        </AuthProvider>
       </BrowserRouter>
     </>
   )

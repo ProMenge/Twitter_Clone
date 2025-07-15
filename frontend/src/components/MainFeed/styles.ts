@@ -2,16 +2,16 @@ import styled from 'styled-components'
 import { colors } from '../../styles'
 
 export const MainContentContainer = styled.main`
-  flex-grow: 1; /* Ocupa o máximo de espaço disponível */
-  max-width: 600px; /* Largura máxima da coluna central */
+  flex-grow: 1;
+  max-width: 600px;
   border-left: 1px solid #2f3336;
   border-right: 1px solid #2f3336;
   display: flex;
   flex-direction: column;
 
   @media (max-width: 768px) {
-    width: 100%; /* Ocupa a largura total em mobile */
-    border-left: none; /* Remove bordas em mobile */
+    width: 100%;
+    border-left: none;
     border-right: none;
   }
 `
@@ -49,7 +49,7 @@ export const FeedHeaderTab = styled.div`
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 50px; /* Largura da barra azul ativa */
+      width: 50px;
       height: 4px;
       background-color: #1d9bf0;
       border-radius: 2px;
@@ -59,14 +59,14 @@ export const FeedHeaderTab = styled.div`
 
 export const PostCreationSection = styled.div`
   display: flex;
-  align-items: flex-start; /* Alinha o avatar e o texto no topo */
+  align-items: flex-start;
   padding: 12px 16px;
   border-bottom: 1px solid #2f3336;
-  cursor: pointer; /* Indica que a seção é clicável */
+  cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 
   &:hover {
-    background-color: #080808; /* Fundo mais escuro no hover */
+    background-color: #080808;
   }
 `
 
@@ -75,15 +75,15 @@ export const PostCreationSectionAvatar = styled.img`
   height: 48px;
   border-radius: 50%;
   margin-right: 12px;
-  flex-shrink: 0; /* Impede que o avatar encolha */
+  flex-shrink: 0;
 `
 
 export const PostCreationSectionText = styled.span`
-  flex-grow: 1; /* Permite que o texto ocupe o restante do espaço */
+  flex-grow: 1;
   color: ${colors.lightGray};
-  font-size: 20px; /* Tamanho da fonte como no X */
-  line-height: 24px; /* Altura da linha para espaçamento vertical */
-  padding-top: 12px; /* Ajusta o padding para alinhar com o input do X */
+  font-size: 20px;
+  line-height: 24px;
+  padding-top: 12px;
 `
 
 // NOVO: Indicador de carregamento
@@ -94,7 +94,6 @@ export const LoadingIndicator = styled.div`
   font-size: 16px;
 `
 
-// NOVO: Mensagem de "nenhum post"
 export const NoPostsMessage = styled.div`
   padding: 20px;
   text-align: center;

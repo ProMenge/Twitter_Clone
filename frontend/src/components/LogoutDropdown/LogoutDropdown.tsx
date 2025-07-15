@@ -3,9 +3,9 @@ import React, { useEffect, useRef } from 'react'
 import * as S from './styles'
 
 interface LogoutDropdownProps {
-  username: string // Nome de usuário para exibir no "Sair de @username"
-  onLogout: () => void // Função para lidar com o logout
-  onClose: () => void // Função para fechar o dropdown (passada pelo pai)
+  username: string
+  onLogout: () => void
+  onClose: () => void
 }
 
 const LogoutDropdown: React.FC<LogoutDropdownProps> = ({
@@ -13,12 +13,10 @@ const LogoutDropdown: React.FC<LogoutDropdownProps> = ({
   onLogout,
   onClose
 }) => {
-  const dropdownRef = useRef<HTMLDivElement>(null) // Ref para o container do dropdown
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Lógica para fechar o dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Se o clique foi fora do dropdown (e não foi no trigger que o abriu)
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)

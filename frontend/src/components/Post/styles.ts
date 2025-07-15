@@ -2,29 +2,29 @@ import styled from 'styled-components'
 import { colors } from '../../styles'
 export const PostContainer = styled.div`
   display: flex;
-  padding: 12px 16px; /* Padding interno como no X */
-  border-bottom: 1px solid #2f3336; /* Divisor de posts */
-  cursor: pointer; /* Indica que o post é clicável */
+  padding: 12px 16px;
+  border-bottom: 1px solid #2f3336;
+  cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 
   &:hover {
-    background-color: #080808; /* Fundo mais escuro no hover */
+    background-color: #080808;
   }
 `
 
 export const AvatarWrapper = styled.div`
-  flex-shrink: 0; /* Não permite que o avatar encolha */
-  width: 48px; /* Tamanho do avatar */
+  flex-shrink: 0;
+  width: 48px;
   height: 48px;
-  border-radius: 50%; /* Avatar circular */
-  background-color: gray; /* Cor de fallback/placeholder */
-  margin-right: 12px; /* Espaçamento à direita do avatar */
-  background-size: cover; /* Para garantir que a imagem preencha */
-  background-position: center; /* Para centralizar a imagem */
+  border-radius: 50%;
+  background-color: gray;
+  margin-right: 12px;
+  background-size: cover;
+  background-position: center;
 `
 
 export const PostContentWrapper = styled.div`
-  flex-grow: 1; /* Ocupa o restante do espaço */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 `
@@ -32,23 +32,23 @@ export const PostContentWrapper = styled.div`
 export const PostHeader = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 4px; /* Espaço abaixo do cabeçalho */
+  margin-bottom: 4px;
 `
 
 export const UserInfo = styled.div`
   display: flex;
   align-items: center;
-  flex-wrap: wrap; /* Permite quebrar se o nome for muito longo */
+  flex-wrap: wrap;
 `
 
 export const Username = styled.span`
-  font-weight: 700; /* Negrito para o nome do usuário */
+  font-weight: 700;
   font-size: 15px;
   color: ${colors.white};
   margin-right: 4px;
 
   &:hover {
-    text-decoration: underline; /* Sublinha no hover */
+    text-decoration: underline;
   }
 `
 
@@ -61,10 +61,10 @@ export const Handle = styled.span`
 export const Timestamp = styled.span`
   color: ${colors.lightGray};
   font-size: 15px;
-  white-space: nowrap; /* Impede que o timestamp quebre linha */
+  white-space: nowrap;
 
   &::before {
-    content: '•'; /* Ponto separador como no X */
+    content: '•';
     margin: 0 4px;
   }
 `
@@ -72,30 +72,30 @@ export const Timestamp = styled.span`
 export const PostText = styled.p`
   font-size: 15px;
   color: ${colors.white};
-  line-height: 20px; /* Espaçamento entre linhas */
-  margin-bottom: 12px; /* Espaço antes da imagem ou ações */
-  word-wrap: break-word; /* Garante que palavras longas quebrem */
+  line-height: 20px;
+  margin-bottom: 12px;
+  word-wrap: break-word;
 `
 
 export const PostImage = styled.img`
   max-width: 100%;
-  border-radius: 16px; /* Bordas arredondadas para a imagem */
-  margin-top: 12px; /* Espaço acima da imagem */
-  margin-bottom: 12px; /* Espaço abaixo da imagem */
-  height: auto; /* Garante que a altura seja ajustada proporcionalmente */
-  display: block; /* Remove espaço extra abaixo da imagem */
+  border-radius: 16px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  height: auto;
+  display: block;
 `
 
 export const PostActions = styled.div`
   display: flex;
-  justify-content: space-between; /* Distribui os ícones igualmente */
-  margin-top: 10px; /* Espaço acima das ações */
+  justify-content: space-between;
+  margin-top: 10px;
   color: ${colors.lightGray};
   width: 100%;
-  max-width: 425px; /* Limitador de largura para as ações, como no X */
+  max-width: 425px;
 
   @media (max-width: 768px) {
-    max-width: none; /* Em mobile, ocupa a largura total */
+    max-width: none;
   }
 `
 
@@ -112,7 +112,6 @@ export const ActionItem = styled.div`
     transition: color 0.2s ease-in-out;
   }
 
-  /* Hover states for specific icons */
   &.reply:hover {
     color: #1d9bf0;
     svg {
@@ -131,12 +130,11 @@ export const ActionItem = styled.div`
       color: #f91880;
     }
   }
-  /* NOVO: Estilo para o estado 'liked' */
   &.like.liked {
-    color: #f91880; /* Cor rosa quando já está curtido */
+    color: #f91880;
     svg {
       color: #f91880;
-      fill: #f91880; /* Preenche o coração quando curtido */
+      fill: #f91880;
     }
   }
   &.views:hover {
@@ -157,14 +155,14 @@ export const OptionsButton = styled.button`
   background: none;
   border: none;
   color: ${colors.lightGray};
-  font-size: 18px; /* Tamanho do ícone de reticências */
+  font-size: 18px;
   cursor: pointer;
-  padding: 5px; /* Área clicável maior */
+  padding: 5px;
   border-radius: 50%;
   transition:
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
-  margin-left: auto; /* Empurra para a direita */
+  margin-left: auto;
 
   &:hover {
     background-color: #1a1a1a;

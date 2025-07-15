@@ -9,6 +9,7 @@ import MainFeed from '../../components/MainFeed/MainFeed'
 import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import api from '../../services/api'
 
+import { useAuth } from '../../contexts/AuthContext'
 import type { PostType, TrendType, UserToFollowType } from '../../types'
 
 const initialTrends: TrendType[] = [
@@ -28,6 +29,8 @@ const initialTrends: TrendType[] = [
 
 export default function FeedPage() {
   const navigate = useNavigate()
+  const { user, isAuthenticated, isLoadingAuth } = useAuth()
+
   const [posts, setPosts] = useState<PostType[]>([])
   const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
@@ -35,29 +38,15 @@ export default function FeedPage() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
 
-  const loggedInUserString = localStorage.getItem('user_data')
-  const loggedInUser = loggedInUserString
-    ? JSON.parse(loggedInUserString)
-    : null
-  const loggedInUserAvatar =
-    loggedInUser?.avatar_url ||
-    'https://via.placeholder.com/48/008000/000000?text=YOU'
-  const loggedInUsername = loggedInUser?.username || 'Usuário'
-  const loggedInDisplayName =
-    loggedInUser?.display_name || 'Usuário Desconhecido'
-
-  // === Lógica de Busca de Posts (useEffect) ===
   useEffect(() => {
     const fetchPosts = async () => {
       setIsLoadingPosts(true)
       try {
         let response
-        const accessToken = localStorage.getItem('access_token')
-
         if (feedType === 'forYou') {
           response = await api.get<PostType[]>('posts/')
         } else {
-          if (!accessToken) {
+          if (!isAuthenticated) {
             console.warn(
               'Usuário não autenticado. Não é possível carregar feed "Seguindo".'
             )
@@ -76,16 +65,16 @@ export default function FeedPage() {
       }
     }
 
-    fetchPosts()
-  }, [feedType])
+    if (!isLoadingAuth) {
+      fetchPosts()
+    }
+  }, [feedType, isAuthenticated, isLoadingAuth])
 
-  // === Lógica de Busca de Sugestões (useEffect) ===
   useEffect(() => {
     const fetchWhoToFollow = async () => {
       setIsLoadingWhoToFollow(true)
       try {
-        const accessToken = localStorage.getItem('access_token')
-        if (!accessToken) {
+        if (!isAuthenticated) {
           console.warn(
             'Usuário não autenticado. Não é possível carregar sugestões.'
           )
@@ -93,7 +82,7 @@ export default function FeedPage() {
           setIsLoadingWhoToFollow(false)
           return
         }
-        const response = await api.get<UserToFollowType[]>('/who-to-follow/')
+        const response = await api.get<UserToFollowType[]>('who-to-follow/')
         setWhoToFollow(response.data)
       } catch (error) {
         console.error('Erro ao buscar sugestões:', error)
@@ -103,11 +92,17 @@ export default function FeedPage() {
       }
     }
 
-    fetchWhoToFollow()
-  }, [])
+    if (!isLoadingAuth) {
+      fetchWhoToFollow()
+    }
+  }, [isAuthenticated, isLoadingAuth])
 
   const handlePostSubmit = async (text: string, imageFile?: File) => {
     try {
+      if (!isAuthenticated) {
+        console.warn('Usuário não autenticado. Não é possível criar postagem.')
+        return
+      }
       const formData = new FormData()
       if (text.trim()) {
         formData.append('text_content', text)
@@ -133,6 +128,12 @@ export default function FeedPage() {
     isCurrentlyFollowing: boolean
   ) => {
     try {
+      if (!isAuthenticated) {
+        console.warn(
+          'Usuário não autenticado. Não é possível seguir/deixar de seguir.'
+        )
+        return
+      }
       if (isCurrentlyFollowing) {
         await api.delete(`users/${userId}/follow/`)
         console.log(`Deixou de seguir usuário ${userId}`)
@@ -158,6 +159,10 @@ export default function FeedPage() {
     isCurrentlyLiked: boolean
   ) => {
     try {
+      if (!isAuthenticated) {
+        console.warn('Usuário não autenticado. Não é possível curtir.')
+        return
+      }
       await api.post(`posts/${postId}/like/`)
       console.log(
         `Post ${postId} ${isCurrentlyLiked ? 'descurtido' : 'curtido'}.`
@@ -182,32 +187,35 @@ export default function FeedPage() {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    localStorage.removeItem('user_data')
-    console.log('Usuário deslogado.')
+  const isAnyModalOpen = showCreatePostModal
 
-    navigate('/')
+  if (isLoadingAuth) {
+    return (
+      <S.PageContainer>
+        <S.LoadingIndicator>Carregando autenticação...</S.LoadingIndicator>
+      </S.PageContainer>
+    )
   }
 
-  const isAnyModalOpen = showCreatePostModal
+  if (!isAuthenticated) {
+    navigate('/')
+    return null
+  }
 
   return (
     <S.PageContainer className={isAnyModalOpen ? 'blurred' : ''}>
       <LeftSidebar
         logoSrc={logo}
-        userAvatarUrl={loggedInUserAvatar}
-        username={loggedInDisplayName}
-        userHandle={loggedInUsername}
         onPostButtonClick={() => setShowCreatePostModal(true)}
-        onLogout={handleLogout}
       />
 
       <MainFeed
         posts={posts}
         onOpenCreatePostModal={() => setShowCreatePostModal(true)}
-        userAvatarUrl={loggedInUserAvatar}
+        userAvatarUrl={
+          user?.avatar_url ||
+          'https://via.placeholder.com/48/CCCCCC/000000?text=U'
+        }
         isLoadingPosts={isLoadingPosts}
         feedType={feedType}
         setFeedType={setFeedType}
@@ -225,7 +233,6 @@ export default function FeedPage() {
         isOpen={showCreatePostModal}
         onClose={() => setShowCreatePostModal(false)}
         onPostSubmit={handlePostSubmit}
-        userAvatarUrl={loggedInUserAvatar}
       />
     </S.PageContainer>
   )

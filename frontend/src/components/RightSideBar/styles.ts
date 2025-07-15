@@ -3,17 +3,16 @@ import { colors } from '../../styles'
 import Button from '../Button/Button'
 
 export const RightSidebarContainer = styled.aside`
-  width: 350px; /* Largura fixa da sidebar direita */
+  width: 350px;
   padding: 10px 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  position: sticky; /* Sidebar fixa na rolagem */
+  position: sticky;
   top: 0;
-  height: 100vh; /* Ocupa a altura total da viewport */
-  overflow-y: auto; /* Permite rolagem */
+  height: 100vh;
+  overflow-y: auto;
 
-  /* Estilo da barra de rolagem para WebKit (Chrome, Safari, Edge) */
   &::-webkit-scrollbar {
     width: 8px;
     background: transparent;
@@ -27,12 +26,11 @@ export const RightSidebarContainer = styled.aside`
   &::-webkit-scrollbar-thumb:hover {
     background: #383b3f;
   }
-  /* Estilo da barra de rolagem para Firefox */
   scrollbar-width: thin;
   scrollbar-color: #2f3336 transparent;
 
   @media (max-width: 1024px) {
-    display: none; /* Oculta em telas menores para dar espaço */
+    display: none;
   }
 `
 
@@ -88,7 +86,7 @@ export const TrendItem = styled.div`
   cursor: pointer;
 
   &:hover {
-    background-color: #080808; /* Fundo escuro no hover */
+    background-color: #080808;
   }
 
   .category {
