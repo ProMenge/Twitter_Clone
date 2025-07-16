@@ -1,52 +1,56 @@
 // src/pages/ProfilePage/index.tsx
-import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import * as S from './styles'
-import { FiArrowLeft, FiMapPin, FiLink, FiCalendar } from 'react-icons/fi' // Ícones para meta-informações
-import { useAuth } from '../../contexts/AuthContext'
-import api from '../../services/api'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useEffect, useState } from 'react'
+import { FiArrowLeft, FiCalendar, FiLink, FiMapPin } from 'react-icons/fi' // Ícones para meta-informações
+import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import api from '../../services/api'
+import * as S from './styles'
 
 import LeftSidebar from '../../components/LeftSideBar/LeftSideBar'
-import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import Post from '../../components/Post/Post'
+import RightSidebar from '../../components/RightSideBar/RightSideBar'
 
-import type { PostType } from '../../types'
+import { AxiosError } from 'axios'
 import logo from '../../assets/images/logo-white.png'
 import Button from '../../components/Button/Button'
-import { AxiosError } from 'axios'
+import EditProfileModal from '../../components/EditProfileModal/EditProfileModal'
+import type { AuthSuccessResponse, PostType } from '../../types'
 
-interface ProfileUser {
-  id: number | string
-  username: string
-  display_name: string
-  avatar_url: string
-  bio: string
-  location: string
-  website: string
-  created_at: string
-  followers_count: number
-  following_count: number
-  is_followed_by_viewer?: boolean
-}
+type ProfileUserType = AuthSuccessResponse['user']
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>()
   const navigate = useNavigate()
-  const { user: authenticatedUser, isAuthenticated, isLoadingAuth } = useAuth()
+  const {
+    user: authenticatedUser,
+    isAuthenticated,
+    isLoadingAuth,
+    login
+  } = useAuth()
 
-  const [profileUser, setProfileUser] = useState<ProfileUser | null>(null)
+  const [profileUser, setProfileUser] = useState<ProfileUserType | null>(null)
   const [userPosts, setUserPosts] = useState<PostType[]>([])
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const fetchProfileData = async () => {
       setIsLoadingProfile(true)
       try {
-        const response = await api.get<ProfileUser>(`users/${username}/`)
+        const response = await api.get<ProfileUserType>(`users/${username}/`)
         setProfileUser(response.data)
       } catch (error) {
         console.error('Erro ao buscar dados do perfil:', error)
@@ -64,14 +68,11 @@ export default function ProfilePage() {
     const fetchUserPosts = async () => {
       setIsLoadingPosts(true)
       try {
-        const response = await api.get<PostType[]>(`posts/users/${username}/`)
+        const response = await api.get<PostType[]>(`/users/${username}/posts`)
         setUserPosts(response.data)
       } catch (error) {
         console.error('Erro ao buscar posts do usuário:', error)
         setUserPosts([])
-        if (error instanceof AxiosError && error.response) {
-          // Pode adicionar tratamento específico para erros de posts aqui
-        }
       } finally {
         setIsLoadingPosts(false)
       }
@@ -93,26 +94,37 @@ export default function ProfilePage() {
         alert('Você precisa estar logado para seguir/deixar de seguir!')
         return
       }
+
       if (isCurrentlyFollowing) {
-        await api.delete(`users/${userId}/follow/`)
+        await api.delete(`users/${userId}/unfollow/`)
       } else {
         await api.post(`users/${userId}/follow/`)
       }
+
       setProfileUser((prev) => {
         if (!prev) return null
+
+        const followers_count = isCurrentlyFollowing
+          ? prev.followers_count - 1
+          : prev.followers_count + 1
+
+        const following_count = isOwnProfile
+          ? isCurrentlyFollowing
+            ? prev.following_count - 1
+            : prev.following_count + 1
+          : prev.following_count
+
         return {
           ...prev,
           is_followed_by_viewer: !isCurrentlyFollowing,
-          followers_count: isCurrentlyFollowing
-            ? prev.followers_count - 1
-            : prev.followers_count + 1
+          followers_count,
+          following_count
         }
       })
     } catch (error) {
       console.error('Erro ao seguir/deixar de seguir:', error)
     }
   }
-
   const handleLikeToggle = async (
     postId: string | number,
     isCurrentlyLiked: boolean
@@ -142,6 +154,31 @@ export default function ProfilePage() {
     }
   }
 
+  const handleProfileUpdated = (updatedUser: ProfileUserType) => {
+    setProfileUser(updatedUser) // Atualiza o estado do perfil na ProfilePage
+
+    // Se o perfil editado for o do usuário logado, atualiza também o AuthContext
+    if (isAuthenticated && authenticatedUser?.id === updatedUser.id) {
+      const currentAccessToken = localStorage.getItem('access_token') || ''
+      const currentRefreshToken = localStorage.getItem('refresh_token') || ''
+      login(currentAccessToken, currentRefreshToken, updatedUser)
+    }
+    setUserPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.user.id === updatedUser.id
+          ? {
+              ...post,
+              user: {
+                ...post.user,
+                display_name: updatedUser.display_name,
+                avatar_url: updatedUser.avatar_url
+              }
+            }
+          : post
+      )
+    )
+  }
+
   if (isLoadingAuth || isLoadingProfile) {
     return (
       <S.ProfilePageContainer>
@@ -163,11 +200,9 @@ export default function ProfilePage() {
   return (
     <S.ProfilePageContainer>
       <LeftSidebar logoSrc={logo} onPostButtonClick={() => {}} />{' '}
-      {/* Usar o import 'logo' */}
       <S.ProfileMainContent>
         <S.ProfileHeaderSection>
-          {/* Nova estrutura de TopBar */}
-          <S.TopBar>
+          <S.TopBar $scrolled={scrolled}>
             <S.BackButton onClick={() => navigate('/feed')}>
               <FiArrowLeft />
             </S.BackButton>
@@ -176,17 +211,12 @@ export default function ProfilePage() {
               <span className="posts-count">{userPosts.length} posts</span>
             </S.TopBarUserInfo>
           </S.TopBar>
-
-          {/* Placeholder da capa */}
           <S.CoverPhotoPlaceholder>
-            {/* Aqui poderia ir a imagem de capa */}
             <p>Capa do perfil (em breve)</p>
           </S.CoverPhotoPlaceholder>
-
           <S.ProfileAvatar
             style={{ backgroundImage: `url(${profileUser.avatar_url})` }}
           />
-
           <S.ProfileActions>
             {isOwnProfile ? (
               <Button
@@ -256,15 +286,12 @@ export default function ProfilePage() {
           </S.UserInfoBox>
         </S.ProfileHeaderSection>
 
-        {/* Abas de perfil (Posts, Respostas, etc.) */}
         <S.ProfileTabs>
           <S.ProfileTab className="active">Posts</S.ProfileTab>
           <S.ProfileTab>Respostas</S.ProfileTab>
           <S.ProfileTab>Mídia</S.ProfileTab>
           <S.ProfileTab>Curtidas</S.ProfileTab>
         </S.ProfileTabs>
-
-        {/* Lista de posts do usuário */}
         {isLoadingPosts ? (
           <S.LoadingIndicator>Carregando posts do perfil...</S.LoadingIndicator>
         ) : userPosts.length === 0 ? (
@@ -276,9 +303,14 @@ export default function ProfilePage() {
         )}
       </S.ProfileMainContent>
       <RightSidebar onFollowUser={handleFollowUser} />
-      {/* Futuros Modals de Edição de Perfil e Alteração de Senha */}
-      {/* {showEditProfileModal && <EditProfileModal isOpen={showEditProfileModal} onClose={() => setShowEditProfileModal(false)} user={profileUser} />} */}
-      {/* <ChangePasswordModal ... /> */}
+      {showEditProfileModal && profileUser && (
+        <EditProfileModal
+          isOpen={showEditProfileModal}
+          onClose={() => setShowEditProfileModal(false)}
+          user={profileUser}
+          onProfileUpdated={handleProfileUpdated}
+        />
+      )}
     </S.ProfilePageContainer>
   )
 }

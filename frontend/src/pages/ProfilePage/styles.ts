@@ -55,7 +55,7 @@ export const CoverPhotoPlaceholder = styled.div`
   position: relative; /* Para o botão de voltar */
 `
 
-export const TopBar = styled.div`
+export const TopBar = styled.div<{ $scrolled: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -64,9 +64,10 @@ export const TopBar = styled.div`
   align-items: center;
   padding: 8px 16px;
   gap: 20px;
-  z-index: 2; /* Acima da capa e do avatar */
-  background: rgba(0, 0, 0, 0.4); /* Fundo semi-transparente */
-  backdrop-filter: blur(5px); /* Efeito de blur para a top bar */
+  z-index: 2;
+  background: rgba(0, 0, 0, ${({ $scrolled }) => ($scrolled ? 0.6 : 0.9)});
+  backdrop-filter: blur(5px);
+  transition: background 0.3s ease;
 `
 
 export const BackButton = styled.button`
