@@ -136,7 +136,6 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://twitter-clone-ashen-six-22.vercel.app/",
     "https://twitter-clone-ashen-six-22.vercel.app"
 
 ]
@@ -145,8 +144,7 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
-    # "https://seu-frontend-vercel.vercel.app",
-    # "https://seu-backend.onrender.com",
+    "https://twitter-clone-ashen-six-22.vercel.app",
 ]
 
 # Para servir arquivos de mídia (avatar_url, image_url de posts)
