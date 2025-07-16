@@ -1,16 +1,22 @@
-# backend/src/posts/views.py
-from django.shortcuts import get_object_or_404
+# posts/views.py
+
 from django.db.models import F
-
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import PermissionDenied # Importar PermissionDenied
-
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from users.models import Follow
-from .models import Post, Like
-from .serializers import PostSerializer, PostCreateSerializer
+from .models import Like, Post, Comment  # Adicionado Comment
+from .serializers import (
+    CommentCreateSerializer,
+    CommentSerializer,
+    LikeSerializer,
+    PostCreateSerializer,
+    PostSerializer,
+)
+
 
 class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly] 
@@ -24,19 +30,15 @@ class PostListCreateView(generics.ListCreateAPIView):
         return PostSerializer
 
     def perform_create(self, serializer):
-        post = serializer.save(user=self.request.user)
-        # Nenhuma mudança aqui, o problema é na serialização da *resposta*
-
+        serializer.save(user=self.request.user)
+    
     def create(self, request, *args, **kwargs):
-        # CORREÇÃO DA FALHA 1: Sobrescrever o método create para usar PostSerializer na resposta
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer) # Salva o post
+        self.perform_create(serializer)
         
-        # Agora, serializa o objeto post recém-criado usando PostSerializer completo
-        # para a resposta HTTP 201 Created
         headers = self.get_success_headers(serializer.data)
-        response_serializer = PostSerializer(serializer.instance, context={'request': request}) # Usa PostSerializer para a resposta
+        response_serializer = PostSerializer(serializer.instance, context={'request': request})
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_serializer_context(self):
@@ -61,13 +63,9 @@ class PostDetailView(generics.RetrieveDestroyAPIView):
     lookup_field = 'pk'
 
     def perform_destroy(self, instance):
-        # CORREÇÃO DA FALHA 3: Levantar PermissionDenied se o usuário não for o dono
         if instance.user != self.request.user:
-            raise PermissionDenied("Você não tem permissão para deletar esta postagem.") # Levanta a exceção
+            raise PermissionDenied("Você não tem permissão para deletar esta postagem.")
         instance.delete()
-        # DRF vai retornar 204 No Content automaticamente após a deleção
-        # Não precisa de return Response aqui se a deleção for bem-sucedida
-        # return Response(status=status.HTTP_204_NO_CONTENT) # Não é necessário aqui se não houver lógica adicional
 
     def get_serializer_context(self):
         return {'request': self.request}
@@ -90,3 +88,41 @@ class LikePostView(APIView):
             post.likes_count = F('likes_count') - 1
             post.save(update_fields=['likes_count'])
             return Response({'status': 'unliked'}, status=status.HTTP_200_OK)
+
+# --- Views de Comentários Corrigidas ---
+class CommentListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        post = get_object_or_404(Post, id=post_id)
+        return Comment.objects.filter(post=post)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CommentCreateSerializer
+        return CommentSerializer
+
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs.get('post_id')
+        post = get_object_or_404(Post, id=post_id)
+        
+        serializer.save(post=post, author=self.request.user)
+        post.comments_count = F('comments_count') + 1
+        post.save(update_fields=['comments_count'])
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        new_comment = Comment.objects.filter(author=request.user).latest('created_at')
+        response_serializer = CommentSerializer(new_comment, context={'request': request})
+        
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
