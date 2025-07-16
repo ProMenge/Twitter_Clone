@@ -1,28 +1,112 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react' // Adicionado useEffect e useState
 import { FiSearch } from 'react-icons/fi'
 import * as S from './styles'
 
-import type { TrendType, UserToFollowType } from '../../types'
+import api from '../../services/api' // Importar o serviço de API
+import { useAuth } from '../../contexts/AuthContext' // Importar useAuth
+
+import type { TrendType, UserToFollowType } from '../../types' // Importar tipos
 
 interface RightSidebarProps {
-  trends: TrendType[]
-  whoToFollow: UserToFollowType[]
-  onFollowUser: (userId: number | string, isCurrentlyFollowing: boolean) => void
-  isLoadingWhoToFollow: boolean
+  // REMOVIDO: trends: TrendType[]; // Não será mais passado como prop
+  // REMOVIDO: whoToFollow: UserToFollowType[]; // Não será mais passado como prop
+  onFollowUser: (userId: number | string, isCurrentlyFollowing: boolean) => void // Ação de seguir, ainda vem de fora
+  // REMOVIDO: isLoadingWhoToFollow: boolean; // Será um estado interno
 }
 
+// Mover initialTrends para fora do componente (se for constante)
+const initialTrends: TrendType[] = [
+  { category: 'Esporte', hashtag: 'Diogo Jota', tweets: '1,38 mi posts' },
+  {
+    category: 'Assunto do Momento',
+    hashtag: '#TopicoLegal',
+    tweets: '10 mil posts'
+  }
+]
+
 const RightSidebar: React.FC<RightSidebarProps> = ({
-  trends,
-  whoToFollow,
-  onFollowUser,
-  isLoadingWhoToFollow
+  // REMOVIDO: trends, whoToFollow, isLoadingWhoToFollow
+  onFollowUser // Ainda recebemos onFollowUser
 }) => {
+  // NOVO: Estados internos para gerenciar 'Quem seguir'
+  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
+  const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
+
+  const { isAuthenticated, isLoadingAuth } = useAuth() // Para verificar autenticação
+
+  // NOVO: Lógica de Busca de Sugestões (movida para cá)
+  useEffect(() => {
+    const fetchWhoToFollowData = async () => {
+      setIsLoadingWhoToFollow(true)
+      try {
+        if (!isAuthenticated) {
+          console.warn(
+            'Usuário não autenticado. Não é possível carregar sugestões.'
+          )
+          setWhoToFollow([])
+          setIsLoadingWhoToFollow(false)
+          return
+        }
+        const response = await api.get<UserToFollowType[]>('who-to-follow/')
+        setWhoToFollow(response.data)
+      } catch (error) {
+        console.error('Erro ao buscar sugestões:', error)
+        setWhoToFollow([])
+      } finally {
+        setIsLoadingWhoToFollow(false)
+      }
+    }
+
+    // Apenas busca sugestões se não estiver no carregamento inicial de autenticação
+    if (!isLoadingAuth) {
+      fetchWhoToFollowData()
+    }
+    // Adicionar isAuthenticated e isLoadingAuth às dependências
+  }, [isAuthenticated, isLoadingAuth])
+
+  // NOVO: Handler de Follow para atualizar o estado interno após a ação
+  // Esta função é uma versão modificada do handleFollowUser que estava em FeedPage.
+  // Ela ainda pode chamar o onFollowUser recebido de FeedPage para que FeedPage possa reagir (ex: refetch posts)
+  const handleFollowUserInternal = async (
+    userId: number | string,
+    isCurrentlyFollowing: boolean
+  ) => {
+    try {
+      if (!isAuthenticated) {
+        alert('Você precisa estar logado para seguir/deixar de seguir!')
+        return
+      }
+      if (isCurrentlyFollowing) {
+        await api.delete(`users/${userId}/follow/`)
+        console.log(`Deixou de seguir usuário ${userId}`)
+      } else {
+        await api.post(`users/${userId}/follow/`)
+        console.log(`Começou a seguir usuário ${userId}`)
+      }
+      // Atualização otimista do estado interno
+      setWhoToFollow((prev) =>
+        prev.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                is_followed_by_viewer: !isCurrentlyFollowing
+              }
+            : user
+        )
+      )
+      onFollowUser(userId, isCurrentlyFollowing)
+    } catch (error) {
+      console.error('Erro ao seguir/deixar de seguir:', error)
+    }
+  }
+
   return (
     <S.RightSidebarContainer>
       <S.SearchBar>
         <FiSearch />
         <input type="text" placeholder="Buscar" />
       </S.SearchBar>
+
       <S.SectionBox>
         <S.SectionTitle>Assine o Premium</S.SectionTitle>
         <p>
@@ -34,13 +118,18 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 
       <S.SectionBox>
         <S.SectionTitle>O que está acontecendo</S.SectionTitle>
-        {trends.map((trend, index) => (
-          <S.TrendItem key={index}>
-            <p className="category">{trend.category}</p>
-            <p className="hashtag">{trend.hashtag}</p>
-            {trend.tweets && <p className="tweets-count">{trend.tweets}</p>}
-          </S.TrendItem>
-        ))}
+        {initialTrends.map(
+          (
+            trend,
+            index // initialTrends agora é usado diretamente
+          ) => (
+            <S.TrendItem key={index}>
+              <p className="category">{trend.category}</p>
+              <p className="hashtag">{trend.hashtag}</p>
+              {trend.tweets && <p className="tweets-count">{trend.tweets}</p>}
+            </S.TrendItem>
+          )
+        )}
       </S.SectionBox>
 
       <S.SectionBox>
@@ -70,8 +159,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     </div>
                   </div>
                   <S.FollowButton
-                    onClick={() =>
-                      onFollowUser(user.id, !!user.is_followed_by_viewer)
+                    onClick={
+                      () =>
+                        handleFollowUserInternal(
+                          user.id,
+                          !!user.is_followed_by_viewer
+                        ) // Chamar handler interno
                     }
                   >
                     {user.is_followed_by_viewer ? 'Seguindo' : 'Seguir'}

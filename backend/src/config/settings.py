@@ -138,7 +138,8 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://twitter-clone-ashen-six-22.vercel.app"
+    "https://twitter-clone-ashen-six-22.vercel.app",
+    "http://localhost:5174"
 
 ]
 

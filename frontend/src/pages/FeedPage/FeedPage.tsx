@@ -10,33 +10,17 @@ import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import api from '../../services/api'
 
 import { useAuth } from '../../contexts/AuthContext'
-import type { PostType, TrendType, UserToFollowType } from '../../types'
-
-const initialTrends: TrendType[] = [
-  { category: 'Esporte', hashtag: 'Diogo Jota', tweets: '1,38 mi posts' },
-  {
-    category: 'Assunto do Momento no Brasil',
-    hashtag: '#WimbledonESPN',
-    tweets: '45 mil posts'
-  },
-  {
-    category: 'Assunto do Momento no Brasil',
-    hashtag: 'Censura',
-    tweets: '65 mil posts'
-  },
-  { category: 'Entretenimento', hashtag: 'Samuca TV', tweets: '' }
-]
+import type { PostType } from '../../types'
 
 export default function FeedPage() {
   const navigate = useNavigate()
   const { user, isAuthenticated, isLoadingAuth } = useAuth()
 
   const [posts, setPosts] = useState<PostType[]>([])
-  const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
+
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
   const [feedType, setFeedType] = useState<'forYou' | 'following'>('forYou')
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
-  const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -69,33 +53,6 @@ export default function FeedPage() {
       fetchPosts()
     }
   }, [feedType, isAuthenticated, isLoadingAuth])
-
-  useEffect(() => {
-    const fetchWhoToFollow = async () => {
-      setIsLoadingWhoToFollow(true)
-      try {
-        if (!isAuthenticated) {
-          console.warn(
-            'Usuário não autenticado. Não é possível carregar sugestões.'
-          )
-          setWhoToFollow([])
-          setIsLoadingWhoToFollow(false)
-          return
-        }
-        const response = await api.get<UserToFollowType[]>('who-to-follow/')
-        setWhoToFollow(response.data)
-      } catch (error) {
-        console.error('Erro ao buscar sugestões:', error)
-        setWhoToFollow([])
-      } finally {
-        setIsLoadingWhoToFollow(false)
-      }
-    }
-
-    if (!isLoadingAuth) {
-      fetchWhoToFollow()
-    }
-  }, [isAuthenticated, isLoadingAuth])
 
   const handlePostSubmit = async (text: string, imageFile?: File) => {
     try {
@@ -141,9 +98,6 @@ export default function FeedPage() {
         await api.post(`users/${userId}/follow/`)
         console.log(`Começou a seguir usuário ${userId}`)
       }
-      const updatedWhoToFollowResponse =
-        await api.get<UserToFollowType[]>('who-to-follow/')
-      setWhoToFollow(updatedWhoToFollowResponse.data)
 
       if (feedType === 'following') {
         const postsResponse = await api.get<PostType[]>('posts/following/')
@@ -222,12 +176,7 @@ export default function FeedPage() {
         onLikeToggle={handleLikeToggle}
       />
 
-      <RightSidebar
-        trends={initialTrends}
-        whoToFollow={whoToFollow}
-        onFollowUser={handleFollowUser}
-        isLoadingWhoToFollow={isLoadingWhoToFollow}
-      />
+      <RightSidebar onFollowUser={handleFollowUser} />
 
       <CreatePostModal
         isOpen={showCreatePostModal}
