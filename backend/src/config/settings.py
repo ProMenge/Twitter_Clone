@@ -136,9 +136,9 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
-    # Exemplo de URL de produção (Render atribuirá)
-    # "https://seu-frontend-vercel.vercel.app",
-    # "https://seu-backend.onrender.com", # Se o frontend for servido do mesmo domínio
+    "https://twitter-clone-ashen-six-22.vercel.app/",
+    "https://twitter-clone-ashen-six-22.vercel.app"
+
 ]
 
 # NOVO: Configurações para produção (segurança)
