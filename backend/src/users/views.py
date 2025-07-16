@@ -1,12 +1,13 @@
+# backend/src/users/views.py
 from django.shortcuts import get_object_or_404
-from django.db.models import F 
+from django.db.models import F
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import RetrieveAPIView # Manter se ainda usado
+from rest_framework.decorators import api_view, permission_classes # Manter se ainda usado
+from rest_framework.permissions import IsAuthenticated # Usado na PasswordChangeView
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -17,6 +18,7 @@ from .serializers import (
     UserSerializer,
     UserUpdateSerializer,
     SuggestedUserSerializer,
+    PasswordChangeSerializer, 
 )
 
 # === Função utilitária ===
@@ -37,8 +39,6 @@ class RegisterView(APIView):
             user = serializer.save()
             tokens = get_tokens_for_user(user)
             user_data = UserSerializer(user).data
-            
-            ### ALTERADO: Retornando ambos os tokens ###
             return Response({
                 'access_token': tokens['access'],
                 'refresh_token': tokens['refresh'],
@@ -54,8 +54,6 @@ class LoginView(APIView):
 
         tokens = get_tokens_for_user(user)
         user_data = UserSerializer(user).data
-        
-        ### ALTERADO: Retornando ambos os tokens ###
         return Response({
             'access_token': tokens['access'],
             'refresh_token': tokens['refresh'],
@@ -68,7 +66,7 @@ class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request}) # Passar request para o serializer
         return Response(serializer.data)
 
 class UserDetailView(RetrieveAPIView):
@@ -83,7 +81,7 @@ class UserDetailView(RetrieveAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
 
-    def get_serializer_context(self):
+    def get_serializer_context(self): # Garantir que o contexto da request é passado
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
@@ -100,7 +98,24 @@ class UserUpdateView(APIView):
         serializer = UserUpdateSerializer(user_to_update, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(UserSerializer(user_to_update).data)
+            # Retornar o UserSerializer completo para o frontend ter os dados atualizados, incluindo is_followed_by_viewer
+            return Response(UserSerializer(user_to_update, context={'request': request}).data)
+
+
+# NOVO: View para Alteração de Senha
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated] # Exige autenticação
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request}) # Passar request para o serializer
+        serializer.is_valid(raise_exception=True) 
+
+        user = request.user 
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+    
+        return Response({'message': 'Senha alterada com sucesso.'}, status=status.HTTP_200_OK)
 
 # === Seguir/Deixar de seguir/Sugestões ===
 
@@ -138,7 +153,9 @@ def unfollow_user(request, id):
 @permission_classes([IsAuthenticated])
 def who_to_follow(request):
     user = request.user
+
     following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+
     suggestions = User.objects.exclude(id__in=following_ids).exclude(id=user.id).order_by('?')[:5]
     
     serializer = SuggestedUserSerializer(suggestions, many=True, context={'request': request})

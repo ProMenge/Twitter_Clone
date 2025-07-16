@@ -113,3 +113,19 @@ class SuggestedUserSerializer(UserSerializer): # Herda do UserSerializer
         fields = UserSerializer.Meta.fields # Reutiliza os campos do UserSerializer.
         # Se você quiser apenas um subconjunto, você pode listar:
         # fields = ['id', 'username', 'display_name', 'avatar_url', 'is_followed_by_viewer']
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True, min_length=6)
+    confirm_new_password = serializers.CharField(required=True, write_only=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError('Senha antiga incorreta.')
+        return value
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError('As novas senhas não coincidem.')
+        return data
