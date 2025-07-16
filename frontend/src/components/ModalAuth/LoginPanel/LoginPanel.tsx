@@ -29,7 +29,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
 
   const loginSchema = Yup.object().shape({
     username_or_email: Yup.string().required(
-      'Celular, e-mail ou nome de usuário é obrigatório'
+      'E-mail ou nome de usuário é obrigatório'
     ),
     password: Yup.string().required('Senha obrigatória')
   })
@@ -102,7 +102,7 @@ const LoginForm: React.FC<LoginPanelProps> = ({ onClose, setGeneralError }) => {
     <form onSubmit={formik.handleSubmit}>
       <S.Input
         name="username_or_email"
-        placeholder="Celular, e-mail ou nome de usuário"
+        placeholder="E-mail ou nome de usuário"
         value={formik.values.username_or_email}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}

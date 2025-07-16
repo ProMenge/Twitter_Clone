@@ -10,7 +10,6 @@ export interface ModalAuthFormValues {
 
   _type_context?: 'login' | 'register' | null
   _step_context?: number | null
-  _useEmailForContact_context?: boolean | null
 }
 
 export interface RegisterPayload {

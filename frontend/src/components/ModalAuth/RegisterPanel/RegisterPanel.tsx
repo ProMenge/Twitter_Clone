@@ -28,7 +28,6 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
 
   const { login } = useAuth()
   const [step, setStep] = useState(1)
-  const [useEmailForContact, setUseEmailForContact] = useState(false)
 
   const months = [
     'Janeiro',
@@ -48,25 +47,12 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
   const registerSchema = Yup.lazy<Yup.ObjectSchema<ModalAuthFormValues>>(
     (values) => {
       const currentStep = values._step_context
-      const currentUseEmailForContact = values._useEmailForContact_context
 
       return Yup.object().shape({
         name: Yup.string().required('Nome obrigatório'),
         contact: Yup.string()
-          .required('Celular ou e-mail obrigatório')
-          .test(
-            'is-contact-valid',
-            'Celular ou e-mail inválido',
-            function (value) {
-              const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value || '')
-              const isPhone = /^\d+$/.test(value || '')
-              if (currentUseEmailForContact) {
-                return isEmail
-              } else {
-                return isEmail || isPhone
-              }
-            }
-          ),
+          .email('Por favor, insira um e-mail válido')
+          .required('O e-mail é obrigatório'),
         birthMonth: Yup.string().required('Selecione o mês'),
         birthDay: Yup.string().required('Selecione o dia'),
         birthYear: Yup.string().required('Selecione o ano'),
@@ -91,8 +77,7 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
           .oneOf(['login', 'register'])
           .nullable()
           .notRequired(),
-        _step_context: Yup.number().notRequired(),
-        _useEmailForContact_context: Yup.boolean().notRequired()
+        _step_context: Yup.number().notRequired()
       })
     }
   )
@@ -108,8 +93,7 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
       confirm_password: '',
       username_or_email: '',
       _type_context: 'register',
-      _step_context: step,
-      _useEmailForContact_context: useEmailForContact
+      _step_context: step
     },
     validationSchema: registerSchema,
     onSubmit: async (
@@ -166,16 +150,11 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
           const birthDate = `${values.birthYear!}-${birthMonthNum}-${birthDayPadded}`
 
           const payload: RegisterPayload = {
-            username: values.name!.replace(/\s/g, '').toLowerCase(),
+            username: values.name!.replace(/\s/g, ''),
             display_name: values.name!,
             email: values.contact!,
             password: values.password!,
             birth_date: birthDate
-          }
-
-          if (!useEmailForContact) {
-            payload.username = values.contact!
-            payload.email = `temp_${Date.now()}@example.com`
           }
 
           const response = await api.post<AuthSuccessResponse>(
@@ -224,8 +203,7 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
   })
   useEffect(() => {
     formik.setFieldValue('_step_context', step)
-    formik.setFieldValue('_useEmailForContact_context', useEmailForContact)
-  }, [step, useEmailForContact, formik.setFieldValue])
+  }, [step, formik.setFieldValue])
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -241,27 +219,17 @@ const RegisterPanel: React.FC<RegisterPanelProps> = ({
           {formik.touched.name && formik.errors.name && (
             <S.Error>{formik.errors.name}</S.Error>
           )}
-          <S.ContactInputGroup>
-            <S.Input
-              name="contact"
-              placeholder={useEmailForContact ? 'E-mail' : 'Celular'}
-              value={formik.values.contact || ''}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              type={useEmailForContact ? 'email' : 'tel'}
-              style={{ marginBottom: '0px' }}
-            />
-            {formik.touched.contact && formik.errors.contact && (
-              <S.Error>{formik.errors.contact}</S.Error>
-            )}
-            <S.ToggleButton
-              type="button"
-              onClick={() => setUseEmailForContact(!useEmailForContact)}
-            >
-              {useEmailForContact ? 'Usar celular' : 'Usar o e-mail'}
-            </S.ToggleButton>
-          </S.ContactInputGroup>
-
+          <S.Input
+            name="contact"
+            placeholder="E-mail"
+            value={formik.values.contact || ''}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            type="email"
+          />
+          {formik.touched.contact && formik.errors.contact && (
+            <S.Error>{formik.errors.contact}</S.Error>
+          )}
           <S.Label>Data de nascimento</S.Label>
           <S.InfoText>
             Isso não será exibido publicamente. Confirme sua própria idade,
