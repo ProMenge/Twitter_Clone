@@ -43,8 +43,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'whitenoise.runserver_nostatic', # Requerido se DEBUG=True
-    'whitenoise', # Adicionar ao final para Whitenoise
+    'whitenoise.runserver_nostatic', 
+    'whitenoise', 
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -124,6 +125,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {

@@ -7,6 +7,8 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -19,6 +21,10 @@ urlpatterns = [
 
     # Apenas a URL para refresh do token é necessária
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
 ]
 
 # Servir arquivos de mídia em desenvolvimento (NÃO USAR EM PRODUÇÃO)
