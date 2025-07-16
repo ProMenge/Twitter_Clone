@@ -7,7 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from users.models import Follow
+from users.models import Follow, User 
 from .models import Like, Post, Comment  # Adicionado Comment
 from .serializers import (
     CommentCreateSerializer,
@@ -126,3 +126,19 @@ class CommentListCreateView(generics.ListCreateAPIView):
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
+
+class UserPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly] # Qualquer um pode ver os posts de um perfil
+
+    def get_queryset(self):
+        """
+        Esta view retorna uma lista de todos os posts
+        criados pelo usuário especificado na URL.
+        """
+        username = self.kwargs['username']
+        user = get_object_or_404(User, username=username)
+        return Post.objects.filter(user=user).order_by('-created_at')
+
+    def get_serializer_context(self):
+        return {'request': self.request}

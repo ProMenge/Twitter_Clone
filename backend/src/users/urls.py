@@ -1,4 +1,5 @@
 from django.urls import path
+from posts.views import UserPostListView
 from .views import (
     RegisterView,
     LoginView,
@@ -22,6 +23,10 @@ urlpatterns = [
     path('users/<int:id>/unfollow/', unfollow_user, name='unfollow-user'),
     
     path('users/<str:username>/', UserDetailView.as_view(), name='user-detail'),
+    
+    #nova URL aqui
+    path('users/<str:username>/posts/', UserPostListView.as_view(), name='user-post-list'),
+
     
     path('who-to-follow/', who_to_follow, name='who-to-follow'),
 ]
