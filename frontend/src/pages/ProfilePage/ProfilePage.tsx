@@ -15,6 +15,7 @@ import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import { AxiosError } from 'axios'
 import logo from '../../assets/images/logo-white.png'
 import Button from '../../components/Button/Button'
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal'
 import EditProfileModal from '../../components/EditProfileModal/EditProfileModal'
 import type { AuthSuccessResponse, PostType } from '../../types'
 
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -219,13 +221,22 @@ export default function ProfilePage() {
           />
           <S.ProfileActions>
             {isOwnProfile ? (
-              <Button
-                variant="secondary"
-                size="medium"
-                onClick={() => setShowEditProfileModal(true)}
-              >
-                Editar perfil
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  size="medium"
+                  onClick={() => setShowEditProfileModal(true)}
+                >
+                  Editar perfil
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="medium"
+                  onClick={() => setShowChangePasswordModal(true)}
+                >
+                  Alterar senha
+                </Button>
+              </>
             ) : (
               <Button
                 variant={
@@ -309,6 +320,12 @@ export default function ProfilePage() {
           onClose={() => setShowEditProfileModal(false)}
           user={profileUser}
           onProfileUpdated={handleProfileUpdated}
+        />
+      )}
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          isOpen={showChangePasswordModal}
+          onClose={() => setShowChangePasswordModal(false)}
         />
       )}
     </S.ProfilePageContainer>
