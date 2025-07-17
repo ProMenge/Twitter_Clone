@@ -1,16 +1,16 @@
+import { AxiosError } from 'axios'
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { FiArrowLeft } from 'react-icons/fi'
-import * as S from './styles'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
-import { AxiosError } from 'axios'
+import * as S from './styles'
 
-import LeftSidebar from '../../components/LeftSideBar/LeftSideBar'
-import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import CommentSection from '../../components/CommentSection/CommentSection'
+import LeftSidebar from '../../components/LeftSideBar/LeftSideBar'
+import PostDetail from '../../components/PostDetail/PostDetail'
+import RightSidebar from '../../components/RightSideBar/RightSideBar'
 import type { PostType } from '../../types'
-import PostDetail from '../../components/PostDetail/Postdetail'
 
 export default function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>()

@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import * as S from './styles'
-import { FiMessageCircle, FiRepeat, FiHeart, FiShare } from 'react-icons/fi'
-import { useAuth } from '../../contexts/AuthContext'
-import api from '../../services/api'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import type { CommentType } from '../../types'
-import userdefault from '../../assets/images/default-avatar-icon-of-social-media-user-vector.jpg'
+import { useEffect, useState } from 'react'
+import { FiHeart, FiMessageCircle, FiRepeat, FiShare } from 'react-icons/fi'
 import { IoStatsChart } from 'react-icons/io5'
+import { useNavigate } from 'react-router-dom'
+import userdefault from '../../assets/images/default-avatar-icon-of-social-media-user-vector.jpg'
+import { useAuth } from '../../contexts/AuthContext'
+import api from '../../services/api'
+import type { CommentType } from '../../types'
+import * as S from './styles'
 
 interface CommentSectionProps {
   postId: string | number

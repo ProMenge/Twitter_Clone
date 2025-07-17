@@ -1,4 +1,3 @@
-import * as S from './styles'
 import { format } from 'date-fns'
 import {
   FiHeart,
@@ -8,7 +7,9 @@ import {
   FiShare
 } from 'react-icons/fi'
 import { IoStatsChart } from 'react-icons/io5'
+import { useNavigate } from 'react-router-dom'
 import type { PostType } from '../../types'
+import * as S from './styles'
 
 interface PostDetailProps {
   post: PostType
@@ -16,16 +17,30 @@ interface PostDetailProps {
 }
 
 export default function PostDetail({ post, onLikeToggle }: PostDetailProps) {
+  const navigate = useNavigate()
+
   const formattedDate = format(
     new Date(post.created_at),
     "hh:mm a '·' MMM dd, yyyy"
   )
 
+  const handleGoToProfile = () => {
+    navigate(`/profile/${post.user.username}`)
+  }
+
   return (
     <S.Container>
       <S.Header>
-        <S.Avatar src={post.user.avatar_url} />
-        <S.UserInfo>
+        <S.Avatar
+          src={post.user.avatar_url}
+          onClick={handleGoToProfile}
+          style={{ cursor: 'pointer' }}
+        />
+        <S.UserInfo
+          onClick={handleGoToProfile}
+          style={{ cursor: 'pointer' }}
+          role="button"
+        >
           <S.DisplayName>{post.user.display_name}</S.DisplayName>
           <S.Username>@{post.user.username}</S.Username>
         </S.UserInfo>

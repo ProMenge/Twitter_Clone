@@ -29,6 +29,10 @@ export const DisplayName = styled.span`
   font-weight: 700;
   font-size: 15px;
   color: ${colors.white};
+
+  &:hover {
+    text-decoration: underline;
+  }
 `
 
 export const Username = styled.span`

@@ -1,13 +1,13 @@
 import { Route, Routes, useNavigate } from 'react-router-dom'
-import Home from './pages/Home/Home'
 import FeedPage from './pages/FeedPage/FeedPage'
-import ProtectedRoute from './routes/PrivateRoute' // Assuming PrivateRoute is correctly implemented
+import Home from './pages/Home/Home'
 import ProfilePage from './pages/ProfilePage/ProfilePage'
+import ProtectedRoute from './routes/PrivateRoute' // Assuming PrivateRoute is correctly implemented
 
 // NOVO: Componente para redirecionar se o usuário já estiver autenticado
 // Isso evita que um usuário logado veja a tela inicial/login novamente
-import { useAuth } from './contexts/AuthContext' // Importar useAuth
 import React, { useEffect } from 'react' // Adicionar React import
+import { useAuth } from './contexts/AuthContext' // Importar useAuth
 import FollowsListPage from './pages/FollowsListPage/FollowsListPage'
 import PostDetailPage from './pages/PostDetailPage/PostDetailPage'
 

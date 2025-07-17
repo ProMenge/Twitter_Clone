@@ -1,9 +1,9 @@
-import * as S from './styles'
-import logo from '../../assets/images/logo.svg'
 import { useState } from 'react'
+import logo from '../../assets/images/logo.svg'
+import Button from '../../components/Button/Button'
 import Footer from '../../components/Footer/Footer'
 import ModalAuth from '../../components/ModalAuth/ModalAuth'
-import Button from '../../components/Button/Button'
+import * as S from './styles'
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false)

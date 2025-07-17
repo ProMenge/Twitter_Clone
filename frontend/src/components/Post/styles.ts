@@ -21,6 +21,7 @@ export const AvatarWrapper = styled.div`
   margin-right: 12px;
   background-size: cover;
   background-position: center;
+  cursor: pointer;
 `
 
 export const PostContentWrapper = styled.div`
@@ -39,6 +40,7 @@ export const UserInfo = styled.div`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  cursor: pointer;
 `
 
 export const Username = styled.span`
