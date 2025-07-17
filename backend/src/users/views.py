@@ -5,9 +5,10 @@ from django.db.models import F
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveAPIView # Manter se ainda usado
-from rest_framework.decorators import api_view, permission_classes # Manter se ainda usado
-from rest_framework.permissions import IsAuthenticated # Usado na PasswordChangeView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
+from rest_framework.decorators import api_view, permission_classes 
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly 
+from django.db.models import F, Subquery, OuterRef
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -20,6 +21,7 @@ from .serializers import (
     SuggestedUserSerializer,
     PasswordChangeSerializer, 
 )
+
 
 # === Função utilitária ===
 
@@ -160,3 +162,53 @@ def who_to_follow(request):
     
     serializer = SuggestedUserSerializer(suggestions, many=True, context={'request': request})
     return Response(serializer.data)
+
+class UserFollowersListView(ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        queryset = Follow.objects.filter(following=user)
+        users_with_follow_date = User.objects.filter(
+            id__in=queryset.values_list('follower__id', flat=True) 
+        ).annotate(
+            # Adiciona um campo temporário 'follow_date' com a data do follow
+            follow_date=Subquery(
+                queryset.filter(follower=OuterRef('pk')).values('created_at')[:1]
+            )
+        ).order_by('-follow_date') # Ordena por essa data
+
+        return users_with_follow_date
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
+class UserFollowingListView(ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        
+        queryset = Follow.objects.filter(follower=user) # Quem 'user' segue
+        
+        users_with_follow_date = User.objects.filter(
+            id__in=queryset.values_list('following__id', flat=True)
+        ).annotate(
+            follow_date=Subquery(
+                queryset.filter(following=OuterRef('pk')).values('created_at')[:1]
+            )
+        ).order_by('-follow_date')
+
+        return users_with_follow_date
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context

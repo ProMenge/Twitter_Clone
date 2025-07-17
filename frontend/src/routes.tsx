@@ -8,6 +8,8 @@ import ProfilePage from './pages/ProfilePage/ProfilePage'
 // Isso evita que um usuário logado veja a tela inicial/login novamente
 import { useAuth } from './contexts/AuthContext' // Importar useAuth
 import React, { useEffect } from 'react' // Adicionar React import
+import FollowsListPage from './pages/FollowsListPage/FollowsListPage'
+import PostDetailPage from './pages/PostDetailPage/PostDetailPage'
 
 const RedirectIfAuthenticated: React.FC<{ children: React.ReactNode }> = ({
   children
@@ -55,6 +57,30 @@ const Rotas = () => {
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/:username/followers"
+        element={
+          <ProtectedRoute>
+            <FollowsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/:username/following"
+        element={
+          <ProtectedRoute>
+            <FollowsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/post/:postId"
+        element={
+          <ProtectedRoute>
+            <PostDetailPage />
           </ProtectedRoute>
         }
       />

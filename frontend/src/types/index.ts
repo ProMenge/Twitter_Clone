@@ -84,3 +84,14 @@ export interface ApiValidationError {
   non_field_errors?: string[]
   detail?: string
 }
+
+// NOVO: Adicionar a interface CommentType aqui
+export interface CommentType {
+  id: number | string
+  post: number | string // ID do post pai
+  author: AuthSuccessResponse['user'] // Autor do comentário (UserSerializer aninhado)
+  content: string
+  created_at: string
+  likes_count?: number // ADICIONADO: Contagem de curtidas
+  is_liked_by_viewer?: boolean
+}
