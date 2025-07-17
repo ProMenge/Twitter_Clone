@@ -8,10 +8,7 @@ import { useAuth } from '../../contexts/AuthContext' // Importar useAuth
 import type { TrendType, UserToFollowType } from '../../types' // Importar tipos
 
 interface RightSidebarProps {
-  // REMOVIDO: trends: TrendType[]; // Não será mais passado como prop
-  // REMOVIDO: whoToFollow: UserToFollowType[]; // Não será mais passado como prop
   onFollowUser: (userId: number | string, isCurrentlyFollowing: boolean) => void // Ação de seguir, ainda vem de fora
-  // REMOVIDO: isLoadingWhoToFollow: boolean; // Será um estado interno
 }
 
 // Mover initialTrends para fora do componente (se for constante)
@@ -24,17 +21,11 @@ const initialTrends: TrendType[] = [
   }
 ]
 
-const RightSidebar: React.FC<RightSidebarProps> = ({
-  // REMOVIDO: trends, whoToFollow, isLoadingWhoToFollow
-  onFollowUser // Ainda recebemos onFollowUser
-}) => {
-  // NOVO: Estados internos para gerenciar 'Quem seguir'
+const RightSidebar: React.FC<RightSidebarProps> = ({ onFollowUser }) => {
   const [whoToFollow, setWhoToFollow] = useState<UserToFollowType[]>([])
   const [isLoadingWhoToFollow, setIsLoadingWhoToFollow] = useState(true)
-
   const { isAuthenticated, isLoadingAuth } = useAuth() // Para verificar autenticação
 
-  // NOVO: Lógica de Busca de Sugestões (movida para cá)
   useEffect(() => {
     const fetchWhoToFollowData = async () => {
       setIsLoadingWhoToFollow(true)
@@ -64,9 +55,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
     // Adicionar isAuthenticated e isLoadingAuth às dependências
   }, [isAuthenticated, isLoadingAuth])
 
-  // NOVO: Handler de Follow para atualizar o estado interno após a ação
-  // Esta função é uma versão modificada do handleFollowUser que estava em FeedPage.
-  // Ela ainda pode chamar o onFollowUser recebido de FeedPage para que FeedPage possa reagir (ex: refetch posts)
   const handleFollowUserInternal = async (
     userId: number | string,
     isCurrentlyFollowing: boolean
@@ -83,7 +71,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         await api.post(`users/${userId}/follow/`)
         console.log(`Começou a seguir usuário ${userId}`)
       }
-      // Atualização otimista do estado interno
+
       setWhoToFollow((prev) =>
         prev.map((user) =>
           user.id === userId

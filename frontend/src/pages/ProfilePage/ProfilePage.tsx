@@ -1,8 +1,7 @@
-// src/pages/ProfilePage/index.tsx
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useEffect, useState } from 'react'
-import { FiArrowLeft, FiCalendar, FiLink, FiMapPin } from 'react-icons/fi' // Ícones para meta-informações
+import { FiArrowLeft, FiCalendar, FiLink, FiMapPin } from 'react-icons/fi'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
@@ -13,7 +12,6 @@ import Post from '../../components/Post/Post'
 import RightSidebar from '../../components/RightSideBar/RightSideBar'
 
 import { AxiosError } from 'axios'
-import logo from '../../assets/images/logo-white.png'
 import Button from '../../components/Button/Button'
 import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal'
 import EditProfileModal from '../../components/EditProfileModal/EditProfileModal'
@@ -36,8 +34,8 @@ export default function ProfilePage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,7 +84,6 @@ export default function ProfilePage() {
     }
   }, [username, navigate])
 
-  // === Handler para seguir/deixar de seguir ===
   const handleFollowUser = async (
     userId: number | string,
     isCurrentlyFollowing: boolean
@@ -127,6 +124,7 @@ export default function ProfilePage() {
       console.error('Erro ao seguir/deixar de seguir:', error)
     }
   }
+
   const handleLikeToggle = async (
     postId: string | number,
     isCurrentlyLiked: boolean
@@ -157,14 +155,14 @@ export default function ProfilePage() {
   }
 
   const handleProfileUpdated = (updatedUser: ProfileUserType) => {
-    setProfileUser(updatedUser) // Atualiza o estado do perfil na ProfilePage
+    setProfileUser(updatedUser)
 
-    // Se o perfil editado for o do usuário logado, atualiza também o AuthContext
     if (isAuthenticated && authenticatedUser?.id === updatedUser.id) {
       const currentAccessToken = localStorage.getItem('access_token') || ''
       const currentRefreshToken = localStorage.getItem('refresh_token') || ''
       login(currentAccessToken, currentRefreshToken, updatedUser)
     }
+
     setUserPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.user.id === updatedUser.id
@@ -188,10 +186,12 @@ export default function ProfilePage() {
       </S.ProfilePageContainer>
     )
   }
+
   if (!isAuthenticated && !profileUser) {
     navigate('/')
     return null
   }
+
   if (!profileUser) {
     return null
   }
@@ -201,7 +201,7 @@ export default function ProfilePage() {
 
   return (
     <S.ProfilePageContainer>
-      <LeftSidebar logoSrc={logo} onPostButtonClick={() => {}} />{' '}
+      <LeftSidebar onPostButtonClick={() => {}} />
       <S.ProfileMainContent>
         <S.ProfileHeaderSection>
           <S.TopBar $scrolled={scrolled}>
@@ -213,12 +213,15 @@ export default function ProfilePage() {
               <span className="posts-count">{userPosts.length} posts</span>
             </S.TopBarUserInfo>
           </S.TopBar>
+
           <S.CoverPhotoPlaceholder>
             <p>Capa do perfil (em breve)</p>
           </S.CoverPhotoPlaceholder>
+
           <S.ProfileAvatar
             style={{ backgroundImage: `url(${profileUser.avatar_url})` }}
           />
+
           <S.ProfileActions>
             {isOwnProfile ? (
               <>
@@ -286,11 +289,22 @@ export default function ProfilePage() {
                 </span>
               )}
             </S.ProfileMeta>
+
             <S.FollowsContainer>
-              <span>
+              <span
+                onClick={() =>
+                  navigate(`/profile/${profileUser.username}/following`)
+                }
+                style={{ cursor: 'pointer' }}
+              >
                 {profileUser.following_count} <p>Seguindo</p>
               </span>
-              <span>
+              <span
+                onClick={() =>
+                  navigate(`/profile/${profileUser.username}/followers`)
+                }
+                style={{ cursor: 'pointer' }}
+              >
                 {profileUser.followers_count} <p>Seguidores</p>
               </span>
             </S.FollowsContainer>
@@ -303,6 +317,7 @@ export default function ProfilePage() {
           <S.ProfileTab>Mídia</S.ProfileTab>
           <S.ProfileTab>Curtidas</S.ProfileTab>
         </S.ProfileTabs>
+
         {isLoadingPosts ? (
           <S.LoadingIndicator>Carregando posts do perfil...</S.LoadingIndicator>
         ) : userPosts.length === 0 ? (
@@ -313,7 +328,9 @@ export default function ProfilePage() {
           ))
         )}
       </S.ProfileMainContent>
+
       <RightSidebar onFollowUser={handleFollowUser} />
+
       {showEditProfileModal && profileUser && (
         <EditProfileModal
           isOpen={showEditProfileModal}
@@ -322,6 +339,7 @@ export default function ProfilePage() {
           onProfileUpdated={handleProfileUpdated}
         />
       )}
+
       {showChangePasswordModal && (
         <ChangePasswordModal
           isOpen={showChangePasswordModal}

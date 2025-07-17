@@ -15,18 +15,16 @@ import { IoPeopleOutline } from 'react-icons/io5'
 import { MdOutlineVerified } from 'react-icons/md'
 import { FaFeatherAlt } from 'react-icons/fa'
 
+import logo from '../../assets/images/logo-white.png'
+
 import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface LeftSidebarProps {
-  logoSrc: string
   onPostButtonClick: () => void
 }
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({
-  logoSrc,
-  onPostButtonClick
-}) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
   const [showLogoutDropdown, setShowLogoutDropdown] = useState(false)
   const { user, logout } = useAuth()
 
@@ -42,7 +40,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
   return (
     <S.LeftSidebarContainer>
-      <S.SidebarLogo src={logoSrc} alt="X Logo" />
+      <S.SidebarLogo src={logo} alt="X Logo" />
       <S.NavList>
         <S.NavItem>
           <a href="#" className="active">
