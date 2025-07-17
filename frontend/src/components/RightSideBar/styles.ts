@@ -121,6 +121,10 @@ export const WhoToFollowItem = styled.div`
     display: flex;
     align-items: center;
     gap: 10px;
+    /* NOVO: Permite que o user-info ocupe o máximo de espaço sem empurrar o botão de Follow */
+    flex-grow: 1;
+    /* NOVO: Garante que o conteúdo dentro dele não empurre o container */
+    min-width: 0; /* Permite que o item encolha */
   }
 
   .avatar {
@@ -128,21 +132,36 @@ export const WhoToFollowItem = styled.div`
     height: 48px;
     border-radius: 50%;
     background-color: gray;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0; /* Impede que o avatar encolha */
   }
 
   .text-details {
     display: flex;
     flex-direction: column;
+    /* NOVO: Limita a largura para que o texto possa truncar */
+    flex-grow: 1;
+    min-width: 0; /* Permite que este flex item encolha */
   }
 
   .username {
     font-weight: 700;
     font-size: 15px;
+    color: ${colors.white};
+    /* NOVO: Truncamento de texto */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adiciona "..." */
   }
 
   .handle {
     color: ${colors.lightGray};
     font-size: 14px;
+    /* NOVO: Truncamento de texto */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `
 
@@ -152,6 +171,7 @@ export const FollowButton = styled(Button)`
   &:hover {
     background-color: #d7dbdd;
   }
+  flex-shrink: 0; /* NOVO: Impede que o botão encolha */
 `
 
 export const SidebarFooter = styled.div`
