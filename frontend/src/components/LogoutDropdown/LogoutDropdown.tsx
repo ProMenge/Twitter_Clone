@@ -1,4 +1,3 @@
-// src/components/LeftSidebar/LogoutDropdown/index.tsx
 import React, { useEffect, useRef } from 'react'
 import * as S from './styles'
 
@@ -6,6 +5,7 @@ interface LogoutDropdownProps {
   username: string
   onLogout: () => void
   onClose: () => void
+  position?: { left: number; top: number }
 }
 
 const LogoutDropdown: React.FC<LogoutDropdownProps> = ({
@@ -34,7 +34,7 @@ const LogoutDropdown: React.FC<LogoutDropdownProps> = ({
   return (
     <S.DropdownContainer ref={dropdownRef}>
       <S.DropdownItem className="text-danger" onClick={onLogout}>
-        Sair de {username}
+        Sair de @{username}
       </S.DropdownItem>
     </S.DropdownContainer>
   )

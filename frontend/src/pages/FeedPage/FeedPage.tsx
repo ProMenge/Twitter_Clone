@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as S from './styles'
 
-import logo from '../../assets/images/logo-white.png'
 import CreatePostModal from '../../components/CreatePostModal/CreatePostModal'
 import LeftSidebar from '../../components/LeftSideBar/LeftSideBar'
 import MainFeed from '../../components/MainFeed/MainFeed'
@@ -158,10 +157,7 @@ export default function FeedPage() {
 
   return (
     <S.PageContainer className={isAnyModalOpen ? 'blurred' : ''}>
-      <LeftSidebar
-        logoSrc={logo}
-        onPostButtonClick={() => setShowCreatePostModal(true)}
-      />
+      <LeftSidebar onPostButtonClick={() => setShowCreatePostModal(true)} />
 
       <MainFeed
         posts={posts}

@@ -29,6 +29,7 @@ export interface AuthSuccessResponse {
   access_token: string
   refresh_token?: string
   user: {
+    banner_url: string
     id: number
     username: string
     email: string

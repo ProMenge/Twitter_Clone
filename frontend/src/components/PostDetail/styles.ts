@@ -13,22 +13,33 @@ export const Header = styled.div`
 `
 
 export const Avatar = styled.img`
+  flex-shrink: 0;
   width: 48px;
   height: 48px;
   border-radius: 50%;
+  background-color: gray;
   margin-right: 12px;
+  background-size: cover;
+  background-position: center;
+  object-fit: cover;
+  cursor: pointer;
 `
 
 export const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  cursor: pointer;
 `
 
 export const DisplayName = styled.span`
   font-weight: 700;
   font-size: 15px;
   color: ${colors.white};
+
+  &:hover {
+    text-decoration: underline;
+  }
 `
 
 export const Username = styled.span`

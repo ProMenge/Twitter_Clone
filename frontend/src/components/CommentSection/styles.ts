@@ -12,6 +12,7 @@ export const CommentFormContainer = styled.div`
   align-items: flex-start;
   padding: 4px 12px;
   border-bottom: 1px solid #2f3336;
+  padding-bottom: 16px;
 `
 
 export const Avatar = styled.img`

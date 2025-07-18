@@ -35,24 +35,25 @@ export const ProfileMainContent = styled.main`
 `
 
 export const ProfileHeaderSection = styled.div`
-  /* Removido padding-bottom e border-bottom aqui, pois o espaçamento é gerenciado internamente */
   display: flex;
   flex-direction: column;
-  position: relative; /* Para posicionar elementos filhos */
-  padding-bottom: 16px; /* Espaço para a borda inferior */
+  position: relative;
+  padding-bottom: 16px;
   border-bottom: 1px solid #2f3336;
 `
 
 export const CoverPhotoPlaceholder = styled.div`
   width: 100%;
-  height: 200px; /* Altura da área do banner/capa */
-  background-color: #333; /* Cor de fundo para simular a capa */
+  height: 200px;
+  background-color: #333;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
   color: ${colors.lightGray};
-  position: relative; /* Para o botão de voltar */
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 `
 
 export const TopBar = styled.div<{ $scrolled: boolean }>`
