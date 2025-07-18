@@ -2,9 +2,9 @@ import styled from 'styled-components'
 import { colors } from '../../styles'
 
 export const DropdownContainer = styled.div`
-  position: fixed;
-  bottom: 85px;
-  left: 70px;
+  position: absolute; // ✅ deixa relativo ao UserInfoContainer
+  bottom: 100%; // ✅ sobe acima do UserInfoContainer
+  left: 0; // ou use right: 0 para alinhar à direita
   background-color: ${colors.black};
   border-radius: 16px;
   box-shadow:
@@ -30,9 +30,11 @@ export const DropdownContainer = styled.div`
   }
 
   @media (max-width: 1024px) {
-    left: 15%;
+    position: fixed;
+    position: fixed;
+    bottom: 85px;
+    left: 70px;
   }
-
   @media (max-width: 996px) {
     left: 14%;
   }

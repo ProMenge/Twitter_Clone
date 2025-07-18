@@ -158,11 +158,15 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
       </S.UserInfoContainer>
 
       {showLogoutDropdown && (
-        <LogoutDropdown
-          username={currentUsername}
-          onLogout={logout}
-          onClose={() => setShowLogoutDropdown(false)}
-        />
+        <div style={{ position: 'relative' }}>
+          <S.LogoutDropdownWrapper>
+            <LogoutDropdown
+              username={currentUsername}
+              onLogout={logout}
+              onClose={() => setShowLogoutDropdown(false)}
+            />
+          </S.LogoutDropdownWrapper>
+        </div>
       )}
     </S.LeftSidebarContainer>
   )

@@ -235,6 +235,15 @@ export const UserInfoContainer = styled.div`
   }
 `
 
+export const LogoutDropdownWrapper = styled.div`
+  position: absolute;
+  bottom: 65px; // ajuste conforme necessário
+  right: 210px; // ou right: 0, se preferir alinhado à direita
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 10;
+`
+
 export const UserOptionsIcon = styled.div`
   margin-left: 20px;
   color: ${colors.lightGray};
