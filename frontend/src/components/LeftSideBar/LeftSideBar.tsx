@@ -1,24 +1,24 @@
 import React, { useState } from 'react'
-import * as S from './styles'
-import {
-  FiHome,
-  FiSearch,
-  FiBell,
-  FiMail,
-  FiUser,
-  FiMoreHorizontal
-} from 'react-icons/fi'
-import { FaXTwitter } from 'react-icons/fa6'
 import { BiHash } from 'react-icons/bi'
-import { RiFileList2Line } from 'react-icons/ri'
+import { FaFeatherAlt } from 'react-icons/fa'
+import { FaXTwitter } from 'react-icons/fa6'
+import {
+  FiBell,
+  FiHome,
+  FiMail,
+  FiMoreHorizontal,
+  FiSearch,
+  FiUser
+} from 'react-icons/fi'
 import { IoPeopleOutline } from 'react-icons/io5'
 import { MdOutlineVerified } from 'react-icons/md'
-import { FaFeatherAlt } from 'react-icons/fa'
+import { RiFileList2Line } from 'react-icons/ri'
+import * as S from './styles'
 
 import logo from '../../assets/images/logo-white.png'
 
-import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
 import { useAuth } from '../../contexts/AuthContext'
+import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
 
 interface LeftSidebarProps {
   onPostButtonClick: () => void
@@ -32,7 +32,6 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
     event.stopPropagation()
     setShowLogoutDropdown((prev) => !prev)
   }
-
   const currentUserAvatar =
     user?.avatar_url || 'https://via.placeholder.com/40/CCCCCC/000000?text=U'
   const currentUsername = user?.username || '@usuario'
@@ -40,7 +39,9 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
 
   return (
     <S.LeftSidebarContainer>
-      <S.SidebarLogo src={logo} alt="X Logo" />
+      <S.SidebarLogoWrapper to="/feed">
+        <S.SidebarLogo src={logo} alt="X Logo" />
+      </S.SidebarLogoWrapper>
       <S.NavList>
         <S.NavItem>
           <a href="#" className="active">
@@ -150,16 +151,16 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <span className="handle">@{currentUsername}</span>
         </div>
 
-        <FiMoreHorizontal />
-
-        {showLogoutDropdown && (
-          <LogoutDropdown
-            username={currentUsername}
-            onLogout={logout}
-            onClose={() => setShowLogoutDropdown(false)}
-          />
-        )}
+        <FiMoreHorizontal className="icon" />
       </S.UserInfoContainer>
+
+      {showLogoutDropdown && (
+        <LogoutDropdown
+          username={currentUsername}
+          onLogout={logout}
+          onClose={() => setShowLogoutDropdown(false)}
+        />
+      )}
     </S.LeftSidebarContainer>
   )
 }

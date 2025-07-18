@@ -31,16 +31,8 @@ export default function PostDetail({ post, onLikeToggle }: PostDetailProps) {
   return (
     <S.Container>
       <S.Header>
-        <S.Avatar
-          src={post.user.avatar_url}
-          onClick={handleGoToProfile}
-          style={{ cursor: 'pointer' }}
-        />
-        <S.UserInfo
-          onClick={handleGoToProfile}
-          style={{ cursor: 'pointer' }}
-          role="button"
-        >
+        <S.Avatar src={post.user.avatar_url} onClick={handleGoToProfile} />
+        <S.UserInfo onClick={handleGoToProfile} role="button">
           <S.DisplayName>{post.user.display_name}</S.DisplayName>
           <S.Username>@{post.user.username}</S.Username>
         </S.UserInfo>

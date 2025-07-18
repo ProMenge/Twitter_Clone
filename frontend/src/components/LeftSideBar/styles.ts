@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { colors } from '../../styles'
 import Button from '../Button/Button'
@@ -48,8 +49,9 @@ export const LeftSidebarContainer = styled.aside`
   scrollbar-color: #2f3336 transparent;
 
   @media (max-width: 1024px) {
-    width: 80px;
+    width: 72px;
     align-items: center;
+    padding: 0;
     span {
       display: none; /* Esconde o texto dos itens de navegação (exceto no botão Postar) */
     }
@@ -59,11 +61,15 @@ export const LeftSidebarContainer = styled.aside`
     display: none;
   }
 `
-
+export const SidebarLogoWrapper = styled(Link)`
+  display: flex;
+  align-self: flex-start;
+  margin-left: 12px;
+  margin-bottom: 20px;
+`
 export const SidebarLogo = styled.img`
   width: 30px;
   margin-bottom: 20px;
-  margin-left: 12px;
   align-self: flex-start;
 `
 
@@ -220,6 +226,12 @@ export const UserInfoContainer = styled.div`
   .handle {
     color: ${colors.lightGray};
     font-size: 14px;
+  }
+
+  .icon {
+    @media (max-width: 1024px) {
+      display: none;
+    }
   }
 `
 

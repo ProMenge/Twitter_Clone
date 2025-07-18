@@ -2,9 +2,9 @@ import styled from 'styled-components'
 import { colors } from '../../styles'
 
 export const DropdownContainer = styled.div`
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 0;
+  position: fixed;
+  bottom: 85px;
+  left: 70px;
   background-color: ${colors.black};
   border-radius: 16px;
   box-shadow:
@@ -12,34 +12,42 @@ export const DropdownContainer = styled.div`
     rgba(255, 255, 255, 0.15) 0px 0px 3px 1px;
   width: 220px;
   overflow: hidden;
-  z-index: 100;
+  z-index: 1000;
   padding: 10px 0;
+  overflow: visible;
 
   &::after {
     content: '';
     position: absolute;
-    bottom: -8px;
-    left: 20px;
+    bottom: -9px;
+    left: 12px;
     width: 0;
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-top: 8px solid ${colors.black};
+    z-index: 1001;
   }
 
   @media (max-width: 1024px) {
-    left: 50%;
-    transform: translateX(-50%);
-    width: 250px;
-    &::after {
-      left: 50%;
-      transform: translateX(-50%);
-    }
+    left: 15%;
+  }
+
+  @media (max-width: 996px) {
+    left: 14%;
+  }
+
+  @media (max-width: 870px) {
+    left: 13%;
+  }
+
+  @media (max-width: 850px) {
+    left: 12%;
   }
 `
 
 export const DropdownItem = styled.div`
-  display: flex;
+  display: fixed;
   align-items: center;
   padding: 12px 16px;
   font-size: 15px;
@@ -53,9 +61,5 @@ export const DropdownItem = styled.div`
 
   &.bold {
     font-weight: 700;
-  }
-
-  &.text-danger {
-    color: #f4212e;
   }
 `
