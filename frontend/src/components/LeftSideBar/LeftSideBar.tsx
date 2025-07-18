@@ -17,6 +17,7 @@ import * as S from './styles'
 
 import logo from '../../assets/images/logo-white.png'
 
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import LogoutDropdown from '../LogoutDropdown/LogoutDropdown'
 
@@ -47,7 +48,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#" className="active">
             <S.StyledIconPlaceholder>
               <FiHome />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Página Inicial</span>
           </a>
         </S.NavItem>
@@ -55,7 +56,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <FiSearch />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Explorar</span>
           </a>
         </S.NavItem>
@@ -63,7 +64,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <BiHash />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Explorar</span>
           </a>
         </S.NavItem>
@@ -71,7 +72,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <FiBell />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Notificações</span>
           </a>
         </S.NavItem>
@@ -79,7 +80,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <FiMail />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Mensagens</span>
           </a>
         </S.NavItem>
@@ -87,7 +88,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <RiFileList2Line />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Listas</span>
           </a>
         </S.NavItem>
@@ -95,7 +96,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <IoPeopleOutline />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Comunidades</span>
           </a>
         </S.NavItem>
@@ -103,7 +104,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <FaXTwitter />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Premium</span>
           </a>
         </S.NavItem>
@@ -111,29 +112,31 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onPostButtonClick }) => {
           <a href="#">
             <S.StyledIconPlaceholder>
               <MdOutlineVerified />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Organizações Ver.</span>
           </a>
         </S.NavItem>
-        <S.NavItem>
-          <a href="#">
-            <S.StyledIconPlaceholder>
-              <FiUser />
-            </S.StyledIconPlaceholder>{' '}
-            <span>Perfil</span>
-          </a>
-        </S.NavItem>
+        {user && (
+          <S.NavItem>
+            <Link to={`/profile/${user.username}`}>
+              <S.StyledIconPlaceholder>
+                <FiUser />
+              </S.StyledIconPlaceholder>{' '}
+              <span>Perfil</span>
+            </Link>
+          </S.NavItem>
+        )}
+
         <S.NavItem>
           <a href="#">
             <S.StyledIconPlaceholder>
               <FiMoreHorizontal />
-            </S.StyledIconPlaceholder>{' '}
+            </S.StyledIconPlaceholder>
             <span>Mais</span>
           </a>
         </S.NavItem>
       </S.NavList>
 
-      {/* Botão "Postar" - Agora com ícone e texto controlados por CSS */}
       <S.SidebarPostButton onClick={onPostButtonClick}>
         <S.StyledIconPlaceholder className="post-icon">
           <FaFeatherAlt />

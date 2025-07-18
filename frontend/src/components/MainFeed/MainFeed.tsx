@@ -1,4 +1,6 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import type { PostType } from '../../types'
 import Post from '../Post/Post'
 import * as S from './styles'
@@ -22,6 +24,15 @@ const MainFeed: React.FC<MainFeedProps> = ({
   setFeedType,
   onLikeToggle
 }) => {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const goToProfile = () => {
+    if (user?.username) {
+      navigate(`/profile/${user.username}`)
+    }
+  }
+
   return (
     <S.MainContentContainer>
       <S.FeedHeader>
@@ -39,9 +50,12 @@ const MainFeed: React.FC<MainFeedProps> = ({
         </S.FeedHeaderTab>
       </S.FeedHeader>
 
-      <S.PostCreationSection onClick={onOpenCreatePostModal}>
-        <S.PostCreationSectionAvatar src={userAvatarUrl} />
-        <S.PostCreationSectionText>
+      <S.PostCreationSection>
+        <S.PostCreationSectionAvatar
+          src={userAvatarUrl}
+          onClick={goToProfile}
+        />
+        <S.PostCreationSectionText onClick={onOpenCreatePostModal}>
           O que está acontecendo?
         </S.PostCreationSectionText>
       </S.PostCreationSection>
