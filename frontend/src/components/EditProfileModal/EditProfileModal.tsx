@@ -26,6 +26,7 @@ interface EditFormValues {
   location: string
   website: string
   avatar_url: string
+  banner_url: string
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -49,6 +50,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     avatar_url: Yup.string()
       .url('URL do avatar inválida')
       .notRequired()
+      .nullable(),
+    banner_url: Yup.string()
+      .url('URL do banner inválida')
+      .notRequired()
       .nullable()
   })
 
@@ -58,7 +63,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       bio: user.bio || '',
       location: user.location || '',
       website: user.website || '',
-      avatar_url: user.avatar_url || ''
+      avatar_url: user.avatar_url || '',
+      banner_url: user.banner_url || ''
     },
     validationSchema: editProfileSchema,
     onSubmit: async (
@@ -82,7 +88,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           bio: values.bio,
           location: values.location,
           website: values.website,
-          avatar_url: values.avatar_url
+          avatar_url: values.avatar_url,
+          banner_url: values.banner_url
         }
 
         const response = await api.put<UserProfileData>(
@@ -136,7 +143,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       bio: user.bio || '',
       location: user.location || '',
       website: user.website || '',
-      avatar_url: user.avatar_url || ''
+      avatar_url: user.avatar_url || '',
+      banner_url: user.banner_url || ''
     })
   }, [user])
 
@@ -210,6 +218,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           />
           {formik.touched.avatar_url && formik.errors.avatar_url && (
             <S.ErrorText>{formik.errors.avatar_url}</S.ErrorText>
+          )}
+          <S.Input
+            name="banner_url"
+            placeholder="URL do Banner"
+            value={formik.values.banner_url}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          />
+          {formik.touched.banner_url && formik.errors.banner_url && (
+            <S.ErrorText>{formik.errors.banner_url}</S.ErrorText>
           )}
 
           <S.SaveButton type="submit" disabled={formik.isSubmitting}>

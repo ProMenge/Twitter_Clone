@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model # Importar get_user_model
 User = get_user_model() # Obter o modelo de usuário para usar no serializer
 
 class UserSerializer(serializers.ModelSerializer):
-    # MOVIDO: is_followed_by_viewer para o UserSerializer
     is_followed_by_viewer = serializers.SerializerMethodField()
 
     class Meta:
@@ -17,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'display_name',
             'avatar_url',
+            'banner_url',
             'bio',
             'location',
             'website',
@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
             'created_at',
             'followers_count',
             'following_count',
-            'is_followed_by_viewer', # ADICIONADO AQUI
+            'is_followed_by_viewer',
         ]
         read_only_fields = ['id', 'created_at', 'followers_count', 'following_count']
 
@@ -100,6 +100,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'display_name',
             'avatar_url',
+            'banner_url',
             'bio',
             'location',
             'website',

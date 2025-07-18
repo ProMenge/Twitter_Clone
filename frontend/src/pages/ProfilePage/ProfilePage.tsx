@@ -214,9 +214,13 @@ export default function ProfilePage() {
             </S.TopBarUserInfo>
           </S.TopBar>
 
-          <S.CoverPhotoPlaceholder>
-            <p>Capa do perfil (em breve)</p>
-          </S.CoverPhotoPlaceholder>
+          <S.CoverPhotoPlaceholder
+            style={{
+              backgroundImage: profileUser.banner_url
+                ? `url(${profileUser.banner_url})`
+                : 'linear-gradient(to right, #0f172a, #1e293b)'
+            }}
+          />
 
           <S.ProfileAvatar
             style={{ backgroundImage: `url(${profileUser.avatar_url})` }}
